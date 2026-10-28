@@ -1,12 +1,21 @@
-AIHOT
-Copyright (c) 2026 数字生命卡兹克. The code is licensed under the MIT License (LICENSE).
+# Notice
 
-The name "AIHOT" and the AIHOT logo are not licensed under the MIT License. Please use your own name
-and logo for your site.
+## Upstream (AIHOT)
+
+This repository is derived from [AIHOT](https://github.com/KKKKhazix/AIHOT) by KKKKhazix (数字生命卡兹克).
+
+The software is licensed under the [MIT License](LICENSE). The upstream copyright notice in LICENSE applies to the portions of the code that originate from AIHOT.
+
+The name **AIHOT** and the AIHOT logo are **not** licensed under the MIT License. ChipHOT is an independent project and brand. Do not use the AIHOT name or logo in the product, marketing, or public-facing assets for this deployment.
+
+## ChipHOT
+
+**ChipHOT** is maintained independently at [ooooooisme/chiphot](https://github.com/ooooooisme/chiphot). Custom site branding, industry configuration, and deployment choices live in this fork’s `site/` and `industry/` directories (see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)).
+
+## Third-party material
 
 This repository also contains third-party material under its own terms:
 
-- assets/og-fonts/: Noto Sans SC, SIL Open Font License 1.1 (assets/og-fonts/LICENSE).
+- `assets/og-fonts/`: Noto Sans SC, SIL Open Font License 1.1 (`assets/og-fonts/LICENSE`).
 
-The demo sources in industry/sources.json are public feeds of their publishers. Their content belongs
-to them; by default the site shows only a summary and a link to the original.
+The demo sources in `industry/sources.json` are public feeds of their publishers. Their content belongs to the publishers; by default the site shows only a summary and a link to the original.
