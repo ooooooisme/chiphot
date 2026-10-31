@@ -4,7 +4,7 @@ import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { EDITION_TIMES, SITE } from "@aihot/site";
+import { EDITION_TIMES, isPreviewBoardHostname, SITE } from "@aihot/site";
 import { CONTACT_ALIASES, PUBLIC_INTERFACE_VERSION } from "@aihot/contracts/http-policy";
 import { PUBLIC_API_CATEGORY_KEYS } from "@aihot/contracts/taxonomy";
 import { REPO_ROOT, config } from "@aihot/backend/config";
@@ -126,7 +126,17 @@ export function registerStatic(app: FastifyInstance) {
   });
 
   // The site's public files (site/public/), placeholders filled in; one the site does not have is a 404.
-  app.get("/robots.txt", (req, reply) => sendFile(req, reply, path.join(PUBLIC, "robots.txt"), { cacheControl: "public, max-age=3600", fill: true }));
+  app.get("/robots.txt", async (req, reply) => {
+    try {
+      if (isPreviewBoardHostname(new URL(config.siteUrl).hostname)) {
+        const body = "User-agent: *\nDisallow: /\n";
+        return sendTextWithEtag(req, reply, body, { etagPrefix: "robots-preview", cacheControl: "public, max-age=3600", contentType: "text/plain; charset=utf-8" });
+      }
+    } catch {
+      /* fall through to site robots.txt */
+    }
+    return sendFile(req, reply, path.join(PUBLIC, "robots.txt"), { cacheControl: "public, max-age=3600", fill: true });
+  });
   app.get("/.well-known/security.txt", (req, reply) => sendFile(req, reply, path.join(PUBLIC, ".well-known/security.txt"), { cacheControl: "public, max-age=86400", fill: true }));
   app.get("/manifest.webmanifest", (req, reply) => sendFile(req, reply, path.join(PUBLIC, "manifest.webmanifest"), { cacheControl: "public, max-age=86400, stale-while-revalidate=604800", fill: true }));
   app.get("/openapi-v1.json", (req, reply) => sendFile(req, reply, path.join(PUBLIC, "openapi-v1.json"), { cacheControl: "public, max-age=300, must-revalidate", publicApi: true, fill: true }));

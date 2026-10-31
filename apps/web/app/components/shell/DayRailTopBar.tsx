@@ -25,7 +25,7 @@ export function DayRailTopBar() {
   const items = primaryNav();
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-surface">
-      <div className="mx-auto flex h-[var(--bar-h)] max-w-[var(--ch-content-max,720px)] items-center gap-3 px-4 lg:gap-5 lg:px-6">
+      <div className="mx-auto flex h-12 min-h-12 max-w-[var(--ch-content-max,720px)] items-center gap-3 px-4 lg:h-[var(--ch-topbar-h,52px)] lg:min-h-[var(--ch-topbar-h,52px)] lg:gap-5 lg:px-6">
         <Link to="/" className="flex shrink-0 items-center gap-1.5 text-[15px] font-extrabold tracking-[-0.03em] text-ink lg:text-[16px]" aria-label={`${SITE.name} 首页`}>
           <span aria-hidden="true" className="size-[7px] rounded-full bg-accent" />
           {SITE.name}

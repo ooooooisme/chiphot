@@ -145,7 +145,8 @@
 }
 
 @media (min-width: 961px) {
-  :root {
+  /* Desktop sidebar shell has no top bar; day-rail keeps --ch-topbar-h via data-visitor-shell. */
+  :root:not([data-visitor-shell="day-rail"]) {
     --bar-h: 0px;
   }
 }
