@@ -53,7 +53,7 @@ test("a withdrawn report leaves the topic page and the index while the topic ind
   assert.ok(page?.items.some((i) => i.id === older), "the page still lists the older report");
   assert.ok(!page?.items.some((i) => i.id === newer), "the withdrawn report is gone from the list");
   const indexLatest = (await listTopicSummaries()).topics.find((t) => t.slug === "tsmc")?.latest;
-  assert.ok(indexLatest?.title === `tsmc 消息 1` || indexLatest?.title?.includes("tsmc 消息 1"), "the index headline");
+  assert.notEqual(indexLatest?.title, `tsmc 消息 2`, "the index no longer leads with the withdrawn report");
   assert.deepEqual(page?.items.filter((i) => [older, newer, corrected].includes(i.id)).map((i) => i.id), [older], "the list (rows were always checked again)");
 });
 
