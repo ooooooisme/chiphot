@@ -10,6 +10,7 @@ import { ChoiceTick, Sheet, sheetChoice } from "../../components/ui/Sheet";
 import { Wordmark } from "@aihot/site/brand/Logo.tsx";
 import { BarButton, PhoneBar } from "../../components/shell/PhoneBar";
 import { openSearch } from "../search/SearchOverlay";
+import { isDayRailShell } from "../../lib/visitor-shell";
 
 /** Same page with some query parameters changed (paging state dropped). */
 function hrefWith(base: string, params: URLSearchParams, patch: Record<string, string | null>) {
@@ -56,6 +57,24 @@ export function FeedBar({ base, category, channel }: { base: "/" | "/all"; categ
   const [sheet, setSheet] = useState(false);
   const scope = (to: string) => hrefWith(to, params, { q: null, tab: null, search: null });
   const filtered = filterKey(category, channel) !== "all";
+  const dayRail = isDayRailShell();
+  if (dayRail) {
+    return (
+      <>
+        <div className="mb-2 flex justify-end gap-2 lg:mb-3">
+          <button
+            type="button"
+            onClick={() => setSheet(true)}
+            className={`inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium transition-colors ${filtered ? "border-accent/40 bg-accent-soft text-accent" : "border-line bg-surface text-ink-3 hover:text-ink"}`}
+          >
+            <IconFilter size={16} />
+            筛选
+          </button>
+        </div>
+        <FilterSheet open={sheet} onClose={() => setSheet(false)} base={base} active={filterKey(category, channel)} />
+      </>
+    );
+  }
   return (
     <>
       <PhoneBar

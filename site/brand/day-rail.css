@@ -1,0 +1,45 @@
+/* ChipHOT A Day Rail — visitor shell tokens · 2026-11-01 */
+[data-visitor-shell="day-rail"] {
+  --ch-paper: #F7F6F2;
+  --ch-ink: #141414;
+  --ch-ink-muted: rgba(20, 20, 20, 0.55);
+  --ch-line: #E6E4DF;
+  --ch-card: #FFFFFF;
+  --ch-accent: #0B6E4F;
+  --ch-accent-soft: rgba(11, 110, 79, 0.12);
+  --ch-pill-pick-bg: #FEF3C7;
+  --ch-pill-pick-fg: #B45309;
+  --ch-pill-industry-bg: #FFFFFF;
+  --ch-pill-industry-border: rgba(20, 20, 20, 0.14);
+  --ch-pill-industry-fg: rgba(20, 20, 20, 0.62);
+  --ch-rail-line: #C9C6BF;
+  --ch-topbar-h: 52px;
+  --ch-content-max: 720px;
+  --ch-rail-time-w: 44px;
+  --ch-rail-gutter: 14px;
+  --ch-card-radius: 12px;
+  --ch-day-sticky-bg: rgba(247, 246, 242, 0.92);
+
+  --bg: var(--ch-paper);
+  --surface: #ffffff;
+  --sidebar: var(--ch-paper);
+  --daybar: var(--ch-day-sticky-bg);
+  --ink: var(--ch-ink);
+  --ink-3: var(--ch-ink-muted);
+  --ink-4: var(--ch-ink-muted);
+  --line: var(--ch-line);
+  --line-soft: var(--ch-line);
+  --line-strong: var(--ch-rail-line);
+  --accent: var(--ch-accent);
+  --accent-soft: var(--ch-accent-soft);
+  --amber-soft: var(--ch-pill-pick-bg);
+  --amber-ink: var(--ch-pill-pick-fg);
+  --bar-h: 48px;
+  --page-max-wide: var(--ch-content-max);
+}
+
+@media (min-width: 961px) {
+  [data-visitor-shell="day-rail"] {
+    --bar-h: var(--ch-topbar-h);
+  }
+}

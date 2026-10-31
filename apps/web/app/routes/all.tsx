@@ -16,6 +16,7 @@ import { PhoneBar } from "../components/shell/PhoneBar";
 import { isPhone, type Screen } from "../components/shell/screens";
 import { openSearch } from "../features/search/SearchOverlay";
 import { addRecentSearch } from "../lib/local-state";
+import { isDayRailShell } from "../lib/visitor-shell";
 
 export const handle: Screen = { tab: "featured", name: "全部" };
 export { pageHeaders as headers } from "../lib/api.server";
@@ -81,6 +82,7 @@ export default function AllPage() {
     else sp.delete("tab");
     return `/all?${sp}`;
   };
+  const dayRail = isDayRailShell();
   const title = f.q ? `搜索“${f.q}”` : f.tag ? `#${f.tag}` : null;
   const updated = beijingTime(data.freshness);
   // Searches are remembered in this browser for the phone search (listed in the privacy notice).
@@ -111,13 +113,20 @@ export default function AllPage() {
       <ActiveFilters base="/all" category={f.category} channel={f.channel} tag={f.tag} />
 
       {/* Desktop, as on 精选: the title, then one filter row with the search field aligned on the right. */}
-      <div className="hidden lg:block">
-        <h1 className="text-[24px] font-semibold leading-[1.3] text-ink">{title ?? ALL_TITLE}</h1>
-        <div className="mb-5 mt-4 flex items-center justify-between gap-4">
-          <CategoryTabs base="/all" category={f.category} channel={f.channel} layoutId="all-cat-desk" className="min-w-0" />
-          <SearchField defaultValue={f.q ?? ""} keep={keep} />
+      {!dayRail && (
+        <div className="hidden lg:block">
+          <h1 className="text-[24px] font-semibold leading-[1.3] text-ink">{title ?? ALL_TITLE}</h1>
+          <div className="mb-5 mt-4 flex items-center justify-between gap-4">
+            <CategoryTabs base="/all" category={f.category} channel={f.channel} layoutId="all-cat-desk" className="min-w-0" />
+            <SearchField defaultValue={f.q ?? ""} keep={keep} />
+          </div>
         </div>
-      </div>
+      )}
+      {dayRail && !f.q && (
+        <div className="mb-3 hidden lg:block">
+          <CategoryTabs base="/all" category={f.category} channel={f.channel} layoutId="all-cat-desk" className="min-w-0" />
+        </div>
+      )}
 
       {f.q && (
         <div className="mb-3 mt-1 flex flex-wrap items-center justify-between gap-2 lg:mt-0">
@@ -138,7 +147,7 @@ export default function AllPage() {
         {data.items.length === 0 ? (
           <div className="mt-2 lg:card">
             <EmptyState
-              title="没有找到相关内容"
+              title={dayRail ? "这一栏暂时没有条目" : "没有找到相关内容"}
               action={
                 f.q && f.tab === "time" ? (
                   <Link to={searchTabHref("relevance")} className="text-[13px] font-medium text-accent hover:underline">
@@ -147,7 +156,7 @@ export default function AllPage() {
                 ) : undefined
               }
             >
-              {f.q ? "换个说法，或者去掉筛选再试。" : "这个筛选下暂时没有内容。"}
+              {f.q ? "换个说法，或者去掉筛选再试。" : dayRail ? "放宽筛选，或过一会儿再来。" : "这个筛选下暂时没有内容。"}
             </EmptyState>
           </div>
         ) : (
