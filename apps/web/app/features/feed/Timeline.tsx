@@ -15,8 +15,9 @@ import { beijingDate, beijingTime, beijingWeekday, monthDay } from "@aihot/contr
 import { byBeijingDay, weekdayShort } from "../../lib/format";
 import { isHydrated } from "../../lib/hydration";
 import { markRead, useReadSet } from "../../lib/local-state";
-import { filterParams, listPath } from "../../lib/seo";
+import { filterParams, hasFeedFilters, listPath } from "../../lib/seo";
 import { isReload, readSnapshot, restoreAnchor, saveSnapshot, useSaveOnLeave } from "../../lib/restore";
+import { isDayRailShell } from "../../lib/visitor-shell";
 
 const AUTO_BATCHES = 3;
 
@@ -41,6 +42,7 @@ function fromResponse(r: TimelineResponse, unreadOnly = false): ListState {
  * whole bar is the fold button).
  */
 export function DayHeader({ day, today, count, collapsed, onToggle, aside, asideOnPhone = true }: { day: string; today: string; count: number | null; collapsed?: boolean; onToggle?: () => void; aside?: React.ReactNode; asideOnPhone?: boolean }) {
+  const dayRail = isDayRailShell();
   const date = monthDay(day, today);
   const weekday = beijingWeekday(day);
   const short = weekdayShort(day);
@@ -61,7 +63,7 @@ export function DayHeader({ day, today, count, collapsed, onToggle, aside, aside
     </>
   );
   return (
-    <div className="bleed sticky top-[var(--bar-h)] z-20 bg-daybar lg:mx-0 lg:bg-bg lg:px-0">
+    <div className={`bleed sticky top-[var(--bar-h)] z-20 lg:mx-0 lg:px-0 ${dayRail ? "bg-[var(--ch-day-sticky-bg,var(--daybar))] backdrop-blur-sm supports-[backdrop-filter]:bg-[var(--ch-day-sticky-bg,var(--daybar))]" : "bg-daybar lg:bg-bg"}`}>
       {/* Phones: a full-width day bar; on the timeline the whole bar folds the day. */}
       {onToggle ? (
         <button type="button" onClick={onToggle} aria-expanded={!collapsed} aria-label={`${collapsed ? "展开" : "收起"}${date}`} className="flex h-11 w-full items-center gap-2 text-left lg:hidden">
@@ -73,11 +75,11 @@ export function DayHeader({ day, today, count, collapsed, onToggle, aside, aside
       {/* Desktop: date text shares the page's left edge, regardless of how many digits it has. */}
       <div className="hidden h-11 items-center gap-3 lg:flex">
         {onToggle ? (
-          <button type="button" onClick={onToggle} aria-expanded={!collapsed} className="whitespace-nowrap text-left text-[18px] font-semibold leading-6 text-ink">
+          <button type="button" onClick={onToggle} aria-expanded={!collapsed} className={`whitespace-nowrap text-left font-bold leading-6 text-ink ${dayRail ? "text-[15px] lg:text-[16px]" : "text-[18px] font-semibold"}`}>
             {date}
           </button>
         ) : (
-          <time dateTime={day} className="whitespace-nowrap text-[18px] font-semibold leading-6 text-ink">{date}</time>
+          <time dateTime={day} className={`whitespace-nowrap font-bold leading-6 text-ink ${dayRail ? "text-[15px] lg:text-[16px]" : "text-[18px] font-semibold"}`}>{date}</time>
         )}
         {onToggle ? (
           <button
@@ -110,6 +112,7 @@ export function DayHeader({ day, today, count, collapsed, onToggle, aside, aside
  * 1px line from this node's centre to the next one's, so the day reads as one continuous thread.
  */
 export function TimelineSlot({ at, children, fresh = false, delay = 0, dataKey }: { at: string; children: React.ReactNode; fresh?: boolean; delay?: number; dataKey?: string }) {
+  const dayRail = isDayRailShell();
   return (
     <li
       data-card-key={dataKey}
@@ -117,13 +120,24 @@ export function TimelineSlot({ at, children, fresh = false, delay = 0, dataKey }
       style={fresh ? { animationDelay: `${delay}ms` } : undefined}
     >
       {/* Phones: the row without the rail (the item shows its time); a hairline between rows. */}
-      <div className="grid grid-cols-[minmax(0,1fr)] border-b border-line-soft py-3.5 group-last/slot:border-b-0 lg:grid-cols-[64px_22px_minmax(0,1fr)] lg:border-b-0 lg:py-0 lg:pb-3 lg:group-last/slot:pb-0">
-        <time dateTime={at} className="mono hidden text-ink-3 lg:block lg:pt-[17px] lg:text-[12.5px] lg:font-semibold lg:leading-6">
+      <div
+        className={
+          dayRail
+            ? "grid grid-cols-[36px_12px_minmax(0,1fr)] gap-x-1.5 border-b border-line-soft py-2.5 group-last/slot:border-b-0 lg:grid-cols-[var(--ch-rail-time-w,44px)_var(--ch-rail-gutter,14px)_minmax(0,1fr)] lg:gap-x-2 lg:border-b-0 lg:py-0 lg:pb-2.5 lg:group-last/slot:pb-0"
+            : "grid grid-cols-[minmax(0,1fr)] border-b border-line-soft py-3.5 group-last/slot:border-b-0 lg:grid-cols-[64px_22px_minmax(0,1fr)] lg:border-b-0 lg:py-0 lg:pb-3 lg:group-last/slot:pb-0"
+        }
+      >
+        <time
+          dateTime={at}
+          className={`mono text-ink-3 tabular-nums ${dayRail ? "pt-4 text-right text-[11px] font-medium lg:block" : "hidden lg:block lg:pt-[17px] lg:text-[12.5px] lg:font-semibold lg:leading-6"}`}
+        >
           {beijingTime(at)}
         </time>
-        <span aria-hidden="true" className="relative hidden lg:block">
-          <span className="absolute -bottom-[41px] left-[10.5px] top-[29px] w-px bg-line-strong group-last/slot:hidden" />
-          <span className="absolute left-[7.5px] top-[25.5px] size-[7px] rounded-full bg-accent shadow-[0_0_0_4px_var(--bg)] transition-transform duration-300 group-hover/slot:scale-[1.15]" />
+        <span aria-hidden="true" className={`relative ${dayRail ? "block" : "hidden lg:block"}`}>
+          <span className={`absolute left-[5px] top-5 w-px group-last/slot:hidden ${dayRail ? "bottom-[-10px] bg-[var(--ch-rail-line,var(--line-strong))]" : "-bottom-[41px] left-[10.5px] top-[29px] bg-line-strong"}`} />
+          <span
+            className={`absolute size-[7px] rounded-full bg-accent ${dayRail ? "left-0 top-[18px] shadow-[0_0_0_3px_var(--ch-paper,var(--bg))]" : "left-[7.5px] top-[25.5px] shadow-[0_0_0_4px_var(--bg)]"} transition-transform duration-300 group-hover/slot:scale-[1.15]`}
+          />
         </span>
         {children}
       </div>
@@ -312,12 +326,20 @@ export function Timeline({ initial, filters }: { initial: TimelineResponse; filt
         <div className="lg:card">
           {unreadOnly ? (
             state.nextCursor ? (
-              <EmptyState title="这批精选都读过了">点下方的按钮，继续找更早的未读精选。</EmptyState>
+              <EmptyState title={isDayRailShell() ? "这一屏精选都翻过了" : "这批精选都读过了"}>
+                {isDayRailShell() ? "往下看更早的，或关掉「只看未读」。" : "点下方的按钮，继续找更早的未读精选。"}
+              </EmptyState>
             ) : (
               <EmptyState title="没有未读的精选内容">关掉「只看未读」可以看到全部内容。</EmptyState>
             )
+          ) : hasFeedFilters(filters) ? (
+            <EmptyState title={isDayRailShell() ? "这一类暂时没有精选" : "这个筛选下还没有精选内容"}>
+              {isDayRailShell() ? "换个分类，或到全部里按时间翻。" : "换个类别看看，或者去全部动态里找找。"}
+            </EmptyState>
           ) : (
-            <EmptyState title="这个筛选下还没有精选内容">换个类别看看，或者去全部动态里找找。</EmptyState>
+            <EmptyState title={isDayRailShell() ? "今天的精选还没出来" : "这个筛选下还没有精选内容"}>
+              {isDayRailShell() ? "信源还在跑；也可以先看全部，或等早上的日报。" : "换个类别看看，或者去全部动态里找找。"}
+            </EmptyState>
           )}
         </div>
       )}

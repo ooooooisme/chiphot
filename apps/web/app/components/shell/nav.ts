@@ -43,6 +43,26 @@ const SECTIONS: Array<{ title: string; items: NavItem[] }> = [
 /** Whether an engine page is a way in from the navigation (site.ts NAV.hidden); a hidden page still opens. */
 export const inNav = (to: string) => !(NAV.hidden as readonly string[]).includes(to);
 
+/** Day Rail top bar: 精选 / 全部 / 日报 (short labels, no subjectAfter). */
+export function primaryNav(): NavItem[] {
+  return [
+    { to: "/", label: "精选", icon: IconBolt, end: true },
+    { to: "/all", label: "全部", icon: IconList },
+    { to: "/daily", label: "日报", icon: IconDoc },
+  ];
+}
+
+/** Pages linked from the top-bar “更多” menu: sidebar entries minus the primary three, plus hidden pages like /topics. */
+export function secondaryNav(): NavItem[] {
+  const skip = new Set(primaryNav().map((i) => i.to));
+  const fromSidebar = sidebar().flatMap((s) => s.items.filter((i) => !skip.has(i.to)));
+  const extra: NavItem[] = [];
+  if ((NAV.hidden as readonly string[]).includes("/topics")) {
+    extra.push({ to: "/topics", label: "主题", icon: IconGrid });
+  }
+  return [...fromSidebar, ...extra.filter((e) => !fromSidebar.some((i) => i.to === e.to))];
+}
+
 const UP = {
   "/hot": { name: "热点榜", back: "热点", tab: "hot" },
   "/topics": { name: "主题", back: "全部主题", tab: "me" },

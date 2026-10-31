@@ -3,13 +3,15 @@ import {
   type ShouldRevalidateFunction,
 } from "react-router";
 import type { SiteMeta } from "@aihot/contracts/site";
-import { SITE } from "@aihot/site";
+import { SITE, VISITOR_SHELL } from "@aihot/site";
 import { RingMark } from "@aihot/site/brand/Logo.tsx";
 import { useEffect, useState, type ReactNode } from "react";
 import type { Route } from "./+types/root";
 import "./app.css";
 import { Sidebar } from "./components/shell/Sidebar";
+import { DayRailTopBar } from "./components/shell/DayRailTopBar";
 import { TabBar } from "./components/shell/TabBar";
+import { isDayRailShell } from "./lib/visitor-shell";
 import { PullToRefresh } from "./components/shell/PullToRefresh";
 import { usePageTransition } from "./components/shell/transitions";
 import { SearchOverlay } from "./features/search/SearchOverlay";
@@ -49,7 +51,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const site = useRouteLoaderData<typeof loader>("root");
   const [documentRelease] = useState(site?.release ?? null);
   return (
-    <html lang={SITE.locale} suppressHydrationWarning>
+    <html lang={SITE.locale} suppressHydrationWarning data-visitor-shell={VISITOR_SHELL ?? undefined}>
       <head>
         <meta charSet="utf-8" />
         {documentRelease && <meta name="aihot-release" content={documentRelease} />}
@@ -81,20 +83,38 @@ export function meta({ error }: Route.MetaArgs) {
 /** Sidebar, main column and phone tab bar around a page (or an error). */
 function SiteShell({ changelogVersion, children }: { changelogVersion: string | null; children: ReactNode }) {
   const navigation = useNavigation();
+  const dayRail = isDayRailShell();
   // The phone search and pull-to-refresh are client-side, mounted once the page is interactive.
   const [interactive, setInteractive] = useState(false);
   useEffect(() => setInteractive(true), []);
   return (
-    <div className="flex min-h-dvh">
+    <div className={`flex min-h-dvh ${dayRail ? "flex-col" : ""}`}>
       <NavigationProgress active={navigation.state === "loading"} />
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[70] focus:rounded-control focus:bg-surface focus:px-3 focus:py-2">
         跳到正文
       </a>
-      <Sidebar changelogVersion={changelogVersion} />
+      {dayRail ? (
+        <DayRailTopBar />
+      ) : (
+        <Sidebar changelogVersion={changelogVersion} />
+      )}
       {/* Phone shell (≤ 960px): each page's top bar (PhoneBar), one centred column, the tab bar below.
           Desktop: the page fills the main area up to the list width (--page-max-wide), centred beyond it. */}
-      <main id="main" className="min-w-0 flex-1 pb-[calc(72px+env(safe-area-inset-bottom))] lg:px-7 lg:pb-[72px] lg:pt-6">
-        <div className="mx-auto w-full max-w-[640px] pl-[var(--gutter-l)] pr-[var(--gutter-r)] lg:max-w-[var(--page-max-wide)] lg:px-0">
+      <main
+        id="main"
+        className={
+          dayRail
+            ? "min-w-0 flex-1 pb-[calc(72px+env(safe-area-inset-bottom))] lg:pb-10"
+            : "min-w-0 flex-1 pb-[calc(72px+env(safe-area-inset-bottom))] lg:px-7 lg:pb-[72px] lg:pt-6"
+        }
+      >
+        <div
+          className={
+            dayRail
+              ? "mx-auto w-full max-w-[var(--ch-content-max,720px)] px-4 pt-3 lg:px-6 lg:pt-5"
+              : "mx-auto w-full max-w-[640px] pl-[var(--gutter-l)] pr-[var(--gutter-r)] lg:max-w-[var(--page-max-wide)] lg:px-0"
+          }
+        >
           {webModules().map((m) => m.root?.Top && <m.root.Top key={m.name} />)}
           {children}
         </div>

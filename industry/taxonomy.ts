@@ -8,7 +8,7 @@ export const CATEGORIES = [
   { key: "packaging", tagColor: "turquoise", label: "封装", feedLabel: "先进封装", section: "先进封装", guide: "CoWoS、2.5D/3D、Chiplet、OSAT 封测产能、封装材料与工艺导入；仅单颗成品规格且无封装维度可归存储或设计工具。" },
   { key: "memory", tagColor: "violet", label: "存储", feedLabel: "存储", section: "存储", guide: "DRAM、NAND、HBM 与模组、存储价格／合约／供需；消费级促销稿若无链上实质归产业与市场。" },
   { key: "design-tools", tagColor: "blue", label: "设计", feedLabel: "设计工具", section: "设计工具", guide: "EDA、IP 核、仿真、PCB/DFT、Sign-off 与设计流程；纯研究论文可归产业与市场或仍归设计工具若主体是方法学。" },
-  { key: "industry", tagColor: "orange", label: "产业", feedLabel: "产业与市场", section: "产业与市场", guide: "分销、交期、渠道、库存、价格、并购、财报、人事、合作、贸易与非军工政策；教程／观点／评论类若无更贴切栏目可归本类。" },
+  { key: "industry", tagColor: "orange", label: "市场", feedLabel: "产业与市场", section: "产业与市场", guide: "分销、交期、渠道、库存、价格、并购、财报、人事、合作、贸易与非军工政策；教程／观点／评论类若无更贴切栏目可归本类。" },
 ] as const satisfies ReadonlyArray<{ key: string; tagColor: string; label: string; feedLabel?: string; section: string; guide: string; commentary?: true }>;
 
 export const RELEASE: { category: string; tag: string; unit: string } | null = null;

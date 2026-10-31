@@ -26,9 +26,9 @@ export const SITE = {
    */
   subject: "元器件",
   /** 首页的完整标题（浏览器标签、搜索结果）。 */
-  homeTitle: "ChipHOT — 元器件与半导体供应链 · 每日精选与日报",
+  homeTitle: "ChipHOT — 元器件／半导体供应链精选与日报",
   /** 主题目录页（/topics）的标题。 */
-  topicsTitle: "元器件主题：制造、封装、存储、设计工具与分销渠道",
+  topicsTitle: "主题：制造、封装、存储、设计与分销",
   /** 反馈表单输入框里的示例。 */
   feedbackExample: "例如：我在查某颗料交期时遇到……我原本想……",
   /** 反馈页标题下面的一句话。 */
@@ -36,11 +36,11 @@ export const SITE = {
   /** 反馈表单邮箱框里的提示。 */
   feedbackEmailHint: "留下邮箱，我们可以回信联系你",
   /** 一句话介绍：搜索引擎、分享卡片、RSS、llms.txt 会用。 */
-  description: `从半导体与元器件信源里挑出值得看的动态，把同一件事的多篇报道归到一起，${EDITION_WHEN.daily} 出一份日报。`,
+  description: `盯半导体、元器件和分销信源，同一件事的多篇报道归到一起，${EDITION_WHEN.daily} 出一份日报。`,
   /** llms.txt 里一句话介绍下面的一段详细介绍（选填）。 */
   llmsIntro: null as string | null,
   /** 一行小字：分享图、海报下方。 */
-  tagline: "值得关注的元器件与供应链动态",
+  tagline: "半导体与元器件供应链动态",
   /** 搜索引擎读到的关键词（首页结构化数据）。 */
   keywords: ["元器件", "半导体", "芯片", "电子分销", "供应链", "ChipHOT"] as string[],
   /** 网站开始收录的年份（结构化数据的时间范围，选填）。 */
@@ -120,15 +120,20 @@ export const NAV = {
    * 不放进导航的引擎入口，目前只支持热点榜（"/hot"）和主题（"/topics"）。页面照样能打开；原来回到它的返回按钮和链接改回精选，
    * 写 "/hot" 时首页也不放当前热点。
    */
-  hidden: ["/hot"] as Array<"/hot" | "/topics">,
+  hidden: ["/hot", "/topics"] as Array<"/hot" | "/topics">,
 };
+
+/**
+ * 访客壳：day-rail 去掉桌面侧栏，顶栏主路径 + 按日时间轨；null 用引擎默认侧栏壳。
+ */
+export const VISITOR_SHELL: "day-rail" | null = "day-rail";
 
 /** 条目卡片和详情页上的几处说法和显示。 */
 export const ITEM_COPY = {
   /** 模型写的那句理由叫什么：卡片、详情页、Markdown 导出、给 Agent 的回答和群推送都用它。 */
   reasonLabel: "推荐理由",
   /** 读者在网页和分享图上看不看得到 AI 评分。只管显示：公开 API 和 MCP 的数据照样带 score，后台照常显示。 */
-  showScore: true,
+  showScore: false,
 };
 
 /** 关于页的一张二维码卡片。 */
@@ -146,15 +151,15 @@ export const ABOUT = {
   /** 页面描述（搜索结果、分享卡片）。 */
   description: `关于 ${SITE.name}：${SITE.description}`,
   /** 大标题：第一行正常颜色，第二行强调色。 */
-  headline: ["半导体与元器件圈每天都有新动静，", "值得跟进的，只有几条。"],
+  headline: ["半导体和元器件这边，", "每天跟几条就够了。"],
   /** 标题下面的一段话。{sources} 会换成实时的信源数（两边自动加空格，所以 {sources} 两边不写空格）；统计没取到时换成 sourcesFallback。 */
-  lead: `${SITE.name} 替你盯着{sources}个信源：抓取、归并、打分、精选，${EDITION_WHEN.daily} 出一份日报。免费，不用注册。`,
+  lead: `${SITE.name} 替你盯着{sources}个信源，筛过再上精选，${EDITION_WHEN.daily} 出一份日报。免费，不用注册。`,
   sourcesFallback: "十几",
   /** 信源河动画下面的四个环节。 */
   steps: {
-    collect: "行业媒体、厂商博客与分销渠道的订阅源都在看；更新越勤的源看得越勤，最快 15 分钟看一次。",
-    store: "抓到的都存下来，同一件事的报道归到一起，热点榜就是从这里算出来的。",
-    select: `模型先看是不是这个行业的事、有没有实际信息，再写中文标题、摘要和${ITEM_COPY.reasonLabel}；营销稿和重复转发进不来。`,
+    collect: "行业媒体、原厂博客和分销渠道的订阅源都在看；更新勤的源看得更勤，最快 15 分钟看一次。",
+    store: "抓到的都存下来，同一件事的报道归到一起。",
+    select: `先过是不是半导体／元器件／分销上的事、有没有交期产能价格这类实信，再写中文标题、摘要和${ITEM_COPY.reasonLabel}；营销稿和重复转发进不来。`,
     publish: `${EDITION_WHEN.daily} 出日报，${EDITION_WHEN.weekly} 出周报，${EDITION_WHEN.monthly} 出月报。`,
   },
   /**
@@ -188,7 +193,7 @@ export const ADMIN = {
 /** Agent 接入页的示例。 */
 export const AGENT = {
   /** MCP 工具表里“搜索”一行：能搜什么、可以怎么问。 */
-  search: { scope: "按厂商、料号、工艺节点或供应链话题搜最近 7 天", ask: "HBM 最近有哪些产能或价格变化？" },
+  search: { scope: "按原厂、料号、工艺节点或交期／渠道话题搜最近 7 天", ask: "HBM 最近有哪些产能或价格变化？" },
 };
 
 /** 日报、周报、月报版面上的说法。 */
@@ -199,9 +204,9 @@ export const REPORTS = {
   motto: SITE.subject as string,
   /** 每种报告页面的描述（搜索结果、分享卡片），不带句号；llms.txt 介绍周报、月报时也用它。 */
   descriptions: {
-    daily: `${SITE.name} ${subjectAfter(`${EDITION_WHEN.daily}（北京时间）发布的`, "行业精编日报")}`,
-    weekly: subjectAfter("每周", "行业综合回顾"),
-    monthly: subjectAfter("每月", "行业盘点"),
+    daily: `${SITE.name} ${subjectAfter(`${EDITION_WHEN.daily}（北京时间）出的`, "日报")}`,
+    weekly: subjectAfter("每周", "回顾"),
+    monthly: subjectAfter("每月", "盘点"),
   },
   /**
    * 一期里的一条怎么称呼（“4 件大事”）：没有头条时的标题（“这一天的 4 件 AI 大事”）、报头和往期目录的条数、
@@ -213,7 +218,7 @@ export const REPORTS = {
   /** 报告分享图上“共几条”的说法。 */
   shareUnit: "件大事",
   /** 日报时段内有资料经过评判、但没有新大事时的标题与导语。 */
-  quiet: { title: "今日安静，无大事发生", paragraph: `${subjectAfter("北京时间 {start} 至 {end}，没有新的", "大事")}。` },
+  quiet: { title: "今天没有成刊大事", paragraph: "北京时间 {start} 至 {end}，没有够上日报的新条目。" },
 };
 
 /** 运维告警（只发给站长）里随部署而变的几处说法。 */
@@ -244,17 +249,17 @@ export const COMMUNITY_FEEDS: { dev: string[]; hn: string[] } = {
 /** 各页分享图（/og/pages/*.png）上的文字。主题目录页的那张按主题数自动生成。 */
 export const CARDS: Record<string, { kicker: string; title: string; subtitle: string; accent?: "hot" | "amber" }> = {
   site: { kicker: subjectAfter("每日", "精选"), title: SITE.tagline, subtitle: SITE.description },
-  all: { kicker: subjectAfter("全部", "动态"), title: "所有信源的最新动态，一站看完", subtitle: "按时间汇总各信源的最新动态，可按类别与标签筛选。" },
+  all: { kicker: subjectAfter("全部", "动态"), title: "各信源最新一条，按时间排", subtitle: "按时间汇总；可按制造、封装、存储、设计、市场筛。" },
   hot: { kicker: "热点榜", title: "过去 48 小时，大家在讨论什么", subtitle: "热度指数、趋势与组成热度的公开来源。", accent: "hot" },
-  daily: { kicker: withSubject("日报"), title: subjectAfter(`每天 ${spokenTime(EDITION_TIMES.daily)}，一份读得完的`, "日报"), subtitle: `${subjectAfter("前一天值得关注的", "动态")}。` },
-  weekly: { kicker: withSubject("周报"), title: `一周${REPORTS.entry.noun}，一次看清`, subtitle: "本周的主线、重要发布与值得回看的讨论。" },
-  monthly: { kicker: withSubject("月报"), title: "一个月的变化", subtitle: "月度主线与关键事件回顾。" },
+  daily: { kicker: withSubject("日报"), title: subjectAfter(`每天 ${spokenTime(EDITION_TIMES.daily)}一份`, "日报"), subtitle: "收前一天筛过的条目。" },
+  weekly: { kicker: withSubject("周报"), title: `这一周的几件${REPORTS.entry.noun}`, subtitle: "本周主线、发布，和回头还能翻的讨论。" },
+  monthly: { kicker: withSubject("月报"), title: "一个月的变化", subtitle: "这个月的主线和关键事件。" },
   about: { kicker: "关于", title: `关于 ${SITE.name}`, subtitle: SITE.description },
   terms: { kicker: "使用规则", title: `${SITE.name} 使用规则`, subtitle: "网页、API、RSS 与 MCP 的使用范围。" },
   privacy: { kicker: "隐私说明", title: `${SITE.name} 隐私说明`, subtitle: "访问日志、浏览器本地数据与反馈资料的处理方式。" },
   changelog: { kicker: "更新日志", title: `${SITE.name} 更新日志`, subtitle: "功能更新、优化、公告与下线记录。" },
   feedback: { kicker: "反馈", title: "告诉我们哪里可以更好", subtitle: "内容、功能、接入，或来源方的更正与下架请求。" },
-  agent: { kicker: "Agent 接入", title: `把 ${SITE.name} 接进你的 Agent`, subtitle: "MCP、RSS、API 三种方式，匿名只读，无需 API Key。" },
+  agent: { kicker: "Agent 接入", title: `把 ${SITE.name} 接到你的 Agent`, subtitle: "MCP、RSS、API 三种方式，匿名只读，无需 API Key。" },
 };
 
 /** 公开接口的访问约定里随部署而变的几处：给 Agent 的使用说明、llms.txt 会写。 */
