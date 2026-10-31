@@ -9,6 +9,7 @@ import { pathToFileURL } from "node:url";
 import { createRequestListener } from "@react-router/node";
 import type { ServerBuild } from "react-router";
 import { isApiOwned, resolveRedirect } from "@aihot/contracts/http-policy";
+import { hostFromPublicRequest, isPreviewBoardPublic, SITE } from "@aihot/site";
 import { BROWSER_MAX_SECONDS } from "./app/lib/api.server.ts";
 import { proxyToApi } from "./app/lib/api-proxy.server.ts";
 import { logError } from "./app/lib/errors.server.ts";
@@ -149,6 +150,16 @@ async function handle(req: import("node:http").IncomingMessage, res: import("nod
     if (decision.location) res.setHeader("Location", decision.location);
     res.statusCode = decision.status;
     return res.end(decision.location ? undefined : decision.status === 410 ? "Gone" : "Not found");
+  }
+
+  if ((req.method === "GET" || req.method === "HEAD") && pathname === "/robots.txt") {
+    const site = (process.env.SITE_URL || SITE.defaultUrl).replace(/\/+$/, "");
+    const requestHost = hostFromPublicRequest(req.headers["x-forwarded-host"], req.headers.host);
+    if (isPreviewBoardPublic(site, requestHost)) {
+      res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=3600", "X-Content-Type-Options": "nosniff" });
+      if (req.method === "HEAD") return res.end();
+      return res.end("User-agent: *\nDisallow: /\n");
+    }
   }
 
   if (isApiOwned(pathname)) {

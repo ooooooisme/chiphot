@@ -89,9 +89,6 @@ export const FeedItem = memo(function FeedItem({ item, group, filters, read = fa
             {item.summary && <p className="mt-1 line-clamp-2 text-[12.5px] leading-[1.5] text-ink-3 lg:line-clamp-3 lg:text-[13px]">{item.summary}</p>}
           </>
         )}
-        {item.reason && (
-          <p className="relative z-10 mt-2 line-clamp-2 text-[12.5px] leading-[1.5] text-note lg:line-clamp-3">{`${ITEM_COPY.reasonLabel}：`}{item.reason}</p>
-        )}
         {group && showSources && <GroupButton group={group} filters={filters} parentId={item.id} />}
       </article>
     );

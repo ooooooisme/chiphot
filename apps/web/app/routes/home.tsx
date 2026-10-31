@@ -1,8 +1,7 @@
 import { redirect, useLoaderData } from "react-router";
 import type { Route } from "./+types/home";
 import type { ReportLatestPage, TimelineResponse } from "@aihot/contracts/site";
-import { beijingDate } from "@aihot/contracts/time";
-import { cachedPage, loadOr404 } from "../lib/api.server";
+import { apiGet, cachedPage, loadOr404 } from "../lib/api.server";
 import { pageReuse } from "../lib/page-reuse";
 import { filterParams, hasFeedFilters, itemListLd, listPath, pageMeta, readFilters, siteLd } from "../lib/seo";
 import { inNav } from "../components/shell/nav";
@@ -24,18 +23,15 @@ export async function loader({ request }: Route.LoaderArgs) {
   if (q && q.trim()) throw redirect(`/all${url.search}`);
   const filters = readFilters(url.searchParams);
   const upstream = new Headers();
-  const data = await loadOr404<TimelineResponse>(listPath("/api/site/timeline", filterParams(filters)), { responseHeaders: upstream, signal: request.signal });
-  const today = beijingDate(Date.now());
-  let dailyStrip: { href: string; issueDate: string } | null = null;
-  if (isDayRailShell()) {
-    try {
-      const latest = await loadOr404<ReportLatestPage>("/api/site/reports/daily/latest-page", { signal: request.signal });
-      if (latest.report?.key) dailyStrip = { href: "/daily", issueDate: latest.report.key };
-    } catch {
-      dailyStrip = null;
-    }
-  }
-  return cachedPage(60, { data, filters, dailyStrip, today }, upstream);
+  const [data, dailyLatest] = await Promise.all([
+    loadOr404<TimelineResponse>(listPath("/api/site/timeline", filterParams(filters)), { responseHeaders: upstream, signal: request.signal }),
+    isDayRailShell()
+      ? apiGet<ReportLatestPage>("/api/site/reports/daily/latest-page", { signal: request.signal }).catch(() => null)
+      : Promise.resolve(null),
+  ]);
+  const dailyStrip =
+    dailyLatest?.report?.key ? { href: "/daily", issueDate: dailyLatest.report.key } : null;
+  return cachedPage(60, { data, filters, dailyStrip }, upstream);
 }
 
 export function meta({ loaderData }: Route.MetaArgs) {
@@ -45,7 +41,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
 }
 
 export default function Home() {
-  const { data, filters, dailyStrip, today } = useLoaderData<typeof loader>();
+  const { data, filters, dailyStrip } = useLoaderData<typeof loader>();
   const title = filters.tag ? `#${filters.tag}` : "精选";
   const dayRail = isDayRailShell();
   return (
@@ -69,7 +65,7 @@ export default function Home() {
 
       {data.hot && inNav("/hot") && <HotTopics entries={data.hot} />}
 
-      {dayRail && dailyStrip && <DailyReportStrip href={dailyStrip.href} issueDate={dailyStrip.issueDate} today={today} />}
+      {dayRail && dailyStrip && <DailyReportStrip href={dailyStrip.href} issueDate={dailyStrip.issueDate} />}
 
       <Timeline initial={data} filters={data.filters} />
     </div>
