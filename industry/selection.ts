@@ -1,19 +1,18 @@
-// 精选的门槛。评分标准本身写在 prompts/selection-score.md；这里只决定“多少分算入选”。
-// 每篇资料由评分模型独立打两次分（0–100），两次之和 ≥ 2 × 门槛才成为精选候选；
-// 确认新闻身份与新增价值后，由发布规则决定展示（见 docs/selection.md），卡片上显示两次的平均分。
-// 门槛按信源分级区分：官方一手信源的门槛低一些，媒体和个人的高一些。改了门槛或评分提示词，
-// 用 scripts/eval-selection.ts 在你自己标注的样本上重跑一遍，再决定上线（见 docs/selection.md）。
+// ChipHOT 精选门槛。五维加权、九类 ITEM_TYPES 权重与品味规则在 prompts/selection-score.md；这里只定“多少分算入选”（无「明确 AI」类门槛）。
+// 流水线：prefilter 非 BLOCK → 两次 selection-score（各 0–100）→ 两次之和 ≥ 2×门槛 → analyses.selected；
+// 公开精选还需 selection_candidate、归组完成且 selection_adds_value≠false（见 docs/selection.md）。
+// 门槛按信源分级：T1 原厂／官网 · T1_5 官方账号 · T2 媒体与个人。改提示词或数字后应用 scripts/eval-selection.ts 在标注样本上复测。
 
 export const SELECTION = {
   /**
-   * 信源分级 → 入选门槛（平均分）。分级在后台“信源”里给每个源设置：
-   *   T1 官方一手（官网、官方博客、机构）· T1_5 官方账号、准官方创作者 · T2 媒体与个人
-   * 分级 EXCLUDE_MP 以及这里没有列出的分级，不参与精选评分（只进“全部动态”）。
+   * 信源分级 → 入选门槛（**两次评分的平均分**须达到；两次之和须 ≥ 2×该值）。
+   * T1 例：台积电／Intel 官网；T1_5 例：原厂社交账号；T2 例：EE Times、行业媒体。
+   * EXCLUDE_MP 及未列出的分级不参与精选评分。
    */
   thresholds: { T1: 60, T1_5: 65, T2: 76 } as Record<string, number>,
   /**
-   * 没入选、但平均分高于这个数的资料，也用精选的写法（内容理解：标题、摘要、推荐理由）来写，
-   * 其余用更便宜的“标题摘要翻译”。
+   * 未入选但平均分高于此值的资料，仍走内容理解（中文标题、摘要、推荐理由）；其余走标题摘要翻译。
+   * 测板若长期精选为 0，先查 prefilter BLOCK、双次 score 是否过线，再看归组 selection_adds_value。
    */
   understandFloor: 50,
 } as const;
