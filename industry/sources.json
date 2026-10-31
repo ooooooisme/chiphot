@@ -1,6 +1,206 @@
 {
-  "$comment": "示范信源：首次启动时导入（scripts/seed.ts），已存在的不会被覆盖。之后在后台“信源”里新建、修改和暂停。字段说明见 docs/customize.md。",
+  "$comment": "行业种子信源（ChipHOT 半导体/元器件/分销）：下方 sources 数组前 10 条为首批 RSS 媒体源，首次启动时由 scripts/seed.ts 导入；已存在于数据库的信源不会被 seed 删除或覆盖。其后保留的 AI 示范源仅作参考与 seed 幂等占位，启用行业源后须在后台「信源」中手动暂停，勿依赖 seed 清理。之后在后台新建、修改和暂停信源；字段说明见 docs/customize.md。Digi-Times、DigiKey、Mouser、TI、Intel 等 feed 未通过校验，暂不纳入；不含快科技、IT之家。",
   "sources": [
+    {
+      "id": "rss-eetimes",
+      "name": "EE Times",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://www.eetimes.com/feed/",
+        "_aihot": {
+          "initialBackfillLimit": 12
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [
+        "媒体"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-semiengineering",
+      "name": "Semiconductor Engineering",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://semiengineering.com/feed/",
+        "_aihot": {
+          "initialBackfillLimit": 12
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [
+        "媒体"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-edn",
+      "name": "EDN",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://www.edn.com/feed/",
+        "_aihot": {
+          "initialBackfillLimit": 12
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [
+        "媒体"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-power-electronics-news",
+      "name": "Power Electronics News",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://www.powerelectronicsnews.com/feed/",
+        "_aihot": {
+          "initialBackfillLimit": 12
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [
+        "媒体"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-electronics-weekly",
+      "name": "Electronics Weekly",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://www.electronicsweekly.com/feed/",
+        "_aihot": {
+          "initialBackfillLimit": 12
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [
+        "媒体"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-electronic-design",
+      "name": "Electronic Design",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://www.electronicdesign.com/rss.xml",
+        "_aihot": {
+          "initialBackfillLimit": 12
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [
+        "媒体"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-eenews-europe",
+      "name": "eeNews Europe",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://www.eenewseurope.com/en/feed/",
+        "_aihot": {
+          "initialBackfillLimit": 12
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [
+        "媒体"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-semiwiki",
+      "name": "SemiWiki",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://semiwiki.com/feed/",
+        "_aihot": {
+          "initialBackfillLimit": 12
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [
+        "媒体"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-semiconductor-digest",
+      "name": "Semiconductor Digest",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://www.semiconductor-digest.com/feed/",
+        "_aihot": {
+          "initialBackfillLimit": 12
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [
+        "媒体"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-electronic-specifier",
+      "name": "Electronic Specifier",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://www.electronicspecifier.com/rss",
+        "_aihot": {
+          "initialBackfillLimit": 12
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [
+        "媒体"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
     {
       "id": "rss-openai-news",
       "name": "OpenAI News",
