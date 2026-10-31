@@ -212,6 +212,7 @@ export interface AdminContentChain {
     id: string; source_id: string; url: string; identity_key: string; title: string; author: string | null; language: string | null;
     published_at: Timestamp | null; published_at_claim: string | null; discovered_at: Timestamp; timeline_at: Timestamp; backfill: boolean;
     body_status: string; revision: number; processing_state: string; processing_error: string | null; grouped_at: Timestamp | null; body_chars: number | null;
+    selection_adds_value: boolean | null; selection_value_reason: string | null; grouping_status: string | null;
     source_name: string; source_kind: string; tier: string; participation_mode: string; site_fulltext: boolean; syndicate_fulltext: boolean;
   };
   discoveries: Array<{ source_id: string; via: string; discovered_at: Timestamp }>;
@@ -219,6 +220,7 @@ export interface AdminContentChain {
   analyses: Array<{
     id: number; origin: string; model: string | null; prompt_version: string | null; input_revision: number; relevance: string | null; category: string | null;
     score: number | null; selected: boolean | null; title_zh: string | null; reason_zh: string | null; created_at: Timestamp;
+    prefilter_label: string | null; prefilter_reason: string | null;
     receipts: Array<{ id: number; status: string; service: string; model: string | null; cost: number | null; at: Timestamp }>;
   }>;
   publication: AdminPublication | null;
