@@ -306,7 +306,26 @@ export const DEPLOYMENT = {
 
 /** Hostname matches DEPLOYMENT.previewHosts (测板 noindex / robots 禁爬). */
 export function isPreviewBoardHostname(hostname: string): boolean {
-  return (DEPLOYMENT.previewHosts as readonly string[]).includes(hostname);
+  return (DEPLOYMENT.previewHosts as readonly string[]).includes(hostname.toLowerCase());
+}
+
+/** Host from Host / X-Forwarded-Host (no port). */
+export function hostFromPublicRequest(forwardedHost?: string | string[], host?: string | string[]): string | null {
+  const raw = forwardedHost ?? host;
+  if (!raw) return null;
+  const first = (Array.isArray(raw) ? raw[0] : String(raw).split(",")[0])?.trim();
+  if (!first) return null;
+  return first.split(":")[0]!.toLowerCase();
+}
+
+/** Preview board when SITE_URL or the incoming public Host matches DEPLOYMENT.previewHosts. */
+export function isPreviewBoardPublic(siteUrl: string, requestHost?: string | null): boolean {
+  try {
+    if (isPreviewBoardHostname(new URL(siteUrl).hostname)) return true;
+  } catch {
+    /* invalid SITE_URL */
+  }
+  return requestHost ? isPreviewBoardHostname(requestHost) : false;
 }
 
 /** RSS 订阅源的说明里随站点而变的说法。 */

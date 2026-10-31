@@ -4,7 +4,7 @@
 import type { MetaDescriptor } from "react-router";
 import { REPORT_NAMES, reportDateLabel, type ReportDetail, type StoryDetail, type TimelineFilters } from "@aihot/contracts/site";
 import { isCategoryKey, isChannelKey } from "@aihot/contracts/taxonomy";
-import { isPreviewBoardHostname, SITE, subjectAfter, withSubject } from "@aihot/site";
+import { isPreviewBoardPublic, SITE, subjectAfter, withSubject } from "@aihot/site";
 
 /**
  * The site's address: SITE_URL while rendering on the server (what crawlers and share previews read),
@@ -16,12 +16,8 @@ export function siteUrl(): string {
 }
 
 /** True when this deployment's public hostname is a preview board (see DEPLOYMENT.previewHosts). */
-export function isPreviewBoard(): boolean {
-  try {
-    return isPreviewBoardHostname(new URL(siteUrl()).hostname);
-  } catch {
-    return false;
-  }
+export function isPreviewBoard(requestHost?: string | null): boolean {
+  return isPreviewBoardPublic(siteUrl(), requestHost ?? null);
 }
 
 const HOME_TITLE = SITE.homeTitle;
@@ -166,7 +162,7 @@ export function siteLd() {
       "@type": "Dataset",
       "@id": `${base}/#dataset`,
       name: `${SITE.name} — ${withSubject("行业动态数据集")}`,
-      description: `${subjectAfter("持续更新的中文", "行业动态")}：每条附中文摘要、评分与原文出处，${subjectAfter("另有每日精选与", "日报")}，可通过 RSS 与公开 API 获取。`,
+      description: `${SITE.description} ${subjectAfter("可通过 RSS、公开 API 与", "日报")}获取。`,
       url: base,
       inLanguage: SITE.locale,
       isAccessibleForFree: true,
