@@ -39,7 +39,7 @@
 }
 
 @media (min-width: 961px) {
-  [data-visitor-shell="day-rail"] {
+  html[data-visitor-shell="day-rail"] {
     --bar-h: var(--ch-topbar-h);
   }
 }

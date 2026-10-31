@@ -4,7 +4,7 @@
 import type { MetaDescriptor } from "react-router";
 import { REPORT_NAMES, reportDateLabel, type ReportDetail, type StoryDetail, type TimelineFilters } from "@aihot/contracts/site";
 import { isCategoryKey, isChannelKey } from "@aihot/contracts/taxonomy";
-import { SITE, subjectAfter, withSubject } from "@aihot/site";
+import { isPreviewBoardHostname, SITE, subjectAfter, withSubject } from "@aihot/site";
 
 /**
  * The site's address: SITE_URL while rendering on the server (what crawlers and share previews read),
@@ -13,6 +13,15 @@ import { SITE, subjectAfter, withSubject } from "@aihot/site";
 export function siteUrl(): string {
   if (typeof window !== "undefined") return window.location.origin;
   return (process.env.SITE_URL || SITE.defaultUrl).replace(/\/+$/, "");
+}
+
+/** True when this deployment's public hostname is a preview board (see DEPLOYMENT.previewHosts). */
+export function isPreviewBoard(): boolean {
+  try {
+    return isPreviewBoardHostname(new URL(siteUrl()).hostname);
+  } catch {
+    return false;
+  }
 }
 
 const HOME_TITLE = SITE.homeTitle;
@@ -94,7 +103,8 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
     { name: "twitter:description", content: description },
     { name: "twitter:image", content: image },
   ];
-  if (input.noindex) tags.push({ name: "robots", content: input.nofollow ? "noindex, nofollow" : "noindex, follow" });
+  const noindex = input.noindex || isPreviewBoard();
+  if (noindex) tags.push({ name: "robots", content: input.nofollow ? "noindex, nofollow" : "noindex, follow" });
   if (input.jsonLd) tags.push({ "script:ld+json": input.jsonLd });
   return tags;
 }

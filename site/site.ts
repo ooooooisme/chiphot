@@ -297,7 +297,17 @@ export const DEPLOYMENT = {
    * null 就用 .data/gold.jsonl 的全部样本（最多 200 条），在 40–90 之间扫描。
    */
   selectionGold: null as null | { file: string; sample: number; split: string; sweep: [number, number] },
+  /**
+   * 测板公网主机名（与 SITE_URL 的 hostname 比对）：全站 noindex、robots.txt 禁止抓取。
+   * 正式域名不要写进这里；本地 defaultUrl 不在列表里，开发不受影响。
+   */
+  previewHosts: ["new.chiphot.com"] as readonly string[],
 };
+
+/** Hostname matches DEPLOYMENT.previewHosts (测板 noindex / robots 禁爬). */
+export function isPreviewBoardHostname(hostname: string): boolean {
+  return (DEPLOYMENT.previewHosts as readonly string[]).includes(hostname);
+}
 
 /** RSS 订阅源的说明里随站点而变的说法。 */
 export const FEED_COPY = {
