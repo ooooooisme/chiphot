@@ -9,7 +9,7 @@ export const SELECTION = {
    * T1 例：台积电／Intel 官网；T1_5 例：原厂社交账号；T2 例：EE Times、行业媒体。
    * EXCLUDE_MP 及未列出的分级不参与精选评分。
    */
-  thresholds: { T1: 60, T1_5: 65, T2: 76 } as Record<string, number>,
+  thresholds: { T1: 60, T1_5: 65, T2: 70 } as Record<string, number>,
   /**
    * 未入选但平均分高于此值的资料，仍走内容理解（中文标题、摘要、推荐理由）；其余走标题摘要翻译。
    * 测板若长期精选为 0，先查 prefilter BLOCK、双次 score 是否过线，再看归组 selection_adds_value。
