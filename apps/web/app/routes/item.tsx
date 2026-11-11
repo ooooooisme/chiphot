@@ -446,8 +446,15 @@ function ItemView({ item }: { item: SiteItemDetail }) {
     ? "src-article-title"
     : "text-[26px] font-bold leading-[1.38] tracking-[-0.01em] text-ink lg:text-[32px] lg:leading-[1.34] xl:text-[36px] xl:leading-[1.3]";
 
+  const articleBack: BackTarget = { to: item.selected ? "/" : "/all", label: item.selected ? "精选" : "全部" };
+
   const articleInner = (
         <article className={dayRail ? "pb-2" : "pb-6 pt-3 lg:pt-2 2xl:pt-1"}>
+          {dayRail && (
+            <div className="mb-3 hidden lg:block">
+              <ArticleBackButton {...articleBack} className="src-article-back h-9 text-[15px]" />
+            </div>
+          )}
           <div className={`flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[13px] text-ink-3 ${dayRail ? "mb-3" : `2xl:hidden ${isX ? "" : "mb-3"}`}`}>
             <span className="font-semibold text-ink-2">{isX ? item.x!.authorName : item.source.name}</span>
             {isX && <span>· @{item.x!.handle} · X</span>}
@@ -490,7 +497,13 @@ function ItemView({ item }: { item: SiteItemDetail }) {
             </section>
           )}
 
-          {item.reason && !summaryOnly && (
+          {dayRail && item.selected && item.reason?.trim() && !summaryOnly && (
+            <section className="mt-6 border-t border-line pt-4">
+              <div className="mb-1 text-[12px] font-semibold text-ink-3">{ITEM_COPY.reasonLabel}</div>
+              <p className="text-[15px] leading-[1.75] text-ink-2">{item.reason}</p>
+            </section>
+          )}
+          {!dayRail && item.reason && !summaryOnly && (
             <section className="mt-6 border-t border-line pt-4 lg:hidden">
               <div className="mb-1 text-[12px] font-semibold text-ink-3">{ITEM_COPY.reasonLabel}</div>
               <p className="text-[15px] leading-[1.75] text-ink-2">{item.reason}</p>
@@ -588,7 +601,8 @@ function ItemView({ item }: { item: SiteItemDetail }) {
 
   const phoneBar = (
     <PhoneBar
-      back={{ to: item.selected ? "/" : "/all", label: item.selected ? "精选" : "全部" }}
+      back={articleBack}
+      backClassName="src-article-back"
       title={isX ? item.x!.authorName : item.title}
       actions={
         <BarButton label="更多操作" onClick={() => setActionsOpen(true)}>
@@ -609,11 +623,7 @@ function ItemView({ item }: { item: SiteItemDetail }) {
         />
       )}
       {dayRail ? <div className="lg:hidden">{phoneBar}</div> : phoneBar}
-      {dayRail ? (
-        <SourceArticleShell back={{ to: item.selected ? "/" : "/all", label: item.selected ? "精选" : "全部" }}>
-          {articleInner}
-        </SourceArticleShell>
-      ) : (
+      {dayRail ? <SourceArticleShell>{articleInner}</SourceArticleShell> : (
         <ArticleLayout
           left={
             <>
@@ -655,12 +665,9 @@ function ItemView({ item }: { item: SiteItemDetail }) {
   );
 }
 
-function SourceArticleShell({ children, back }: { children: React.ReactNode; back: BackTarget }) {
+function SourceArticleShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="src-container mx-auto max-w-[var(--src-read,680px)] pt-4 lg:pt-6">
-      <div className="mb-3 hidden lg:block">
-        <ArticleBackButton {...back} className="h-9 pl-0 text-[15px]" />
-      </div>
       {children}
     </div>
   );

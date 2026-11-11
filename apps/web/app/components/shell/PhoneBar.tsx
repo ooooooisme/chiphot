@@ -16,8 +16,9 @@ export interface BackTarget {
   label: string;
 }
 
-export function PhoneBar({ back, title, large = false, sub, leading, center, actions }: {
+export function PhoneBar({ back, backClassName, title, large = false, sub, leading, center, actions }: {
   back?: BackTarget;
+  backClassName?: string;
   /** The page's name. In the bar once the page's heading ([data-page-title]) is under it; with `large`,
    *  also as the large heading below the bar. */
   title?: ReactNode;
@@ -39,7 +40,7 @@ export function PhoneBar({ back, title, large = false, sub, leading, center, act
         className={`bleed sticky top-0 z-40 bg-bg/85 backdrop-blur-xl backdrop-saturate-150 transition-shadow duration-200 lg:hidden ${scrolled ? "shadow-[0_1px_0_var(--line-soft)]" : ""}`}
       >
         <div className={`-mx-2.5 grid h-[var(--bar-h)] items-center ${wideCenter ? "grid-cols-[minmax(0,1fr)_auto]" : "grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]"}`}>
-          {!wideCenter && <div className="flex min-w-0 items-center">{back ? <ArticleBackButton {...back} /> : leading}</div>}
+          {!wideCenter && <div className="flex min-w-0 items-center">{back ? <ArticleBackButton {...back} className={backClassName} /> : leading}</div>}
           {/* A title not shown yet takes no width, so the back label is not cut short before it appears. */}
           <div className={`flex min-w-0 justify-center ${wideCenter ? "" : "max-w-[calc(100vw-184px)]"}`} style={!center && !titleShown ? { maxWidth: 0 } : undefined}>
             {center ?? (
@@ -86,7 +87,7 @@ export function ArticleBackButton({ to, label, className = "" }: BackTarget & { 
         if (historyIndex() > 0) navigate(-1);
         else navigate(to, { viewTransition: true });
       }}
-      className={`flex h-11 min-w-11 items-center pl-1 pr-2 text-[16px] text-accent transition-opacity active:opacity-50 ${className}`}
+      className={`flex h-11 min-w-11 items-center pl-1 pr-2 text-[16px] text-accent transition-opacity active:opacity-50 ${className ?? ""}`}
     >
       <IconChevronLeft size={25} strokeWidth={2.1} />
       <span className="max-w-[7em] truncate">{text}</span>
