@@ -4,7 +4,7 @@ import { IntentLink } from "../../components/ui/IntentLink";
 import { markRead, useReadSet } from "../../lib/local-state";
 import { rememberPreview } from "../item/preview";
 import { SourceGroupLead } from "./SourceGroup";
-import { monthDayTime } from "../../lib/format";
+import { sourceListTime } from "../../lib/format";
 
 export const SOURCE_FRONT_USED = 7;
 
@@ -34,7 +34,7 @@ function ItemMeta({ item, at }: { item: TimelineCard["item"]; at?: string }) {
       {at && (
         <>
           {" · "}
-          <time dateTime={at}>{monthDayTime(at)}</time>
+          <time dateTime={at}>{sourceListTime(at)}</time>
         </>
       )}
     </p>

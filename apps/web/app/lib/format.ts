@@ -47,7 +47,7 @@ export function monthDayTime(iso: string): string {
   return `${monthDay(beijingDate(iso))} ${beijingTime(iso)}`;
 }
 
-/** Source shell: "10 月 4 日 16:00" (spaced month/day, Beijing). */
+/** Reader-facing Beijing datetime: "10 月 4 日 16:00" (spaced month/day). */
 export function sourceListTime(iso: string): string {
   const day = monthDay(beijingDate(iso)).replace(/(\d+)月(\d+)日/, "$1 月 $2 日");
   return `${day} ${beijingTime(iso)}`;

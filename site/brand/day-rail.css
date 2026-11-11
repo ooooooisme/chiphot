@@ -211,6 +211,11 @@ html[data-visitor-shell="day-rail"] body {
     border-bottom: 1px solid var(--src-ink);
     margin-bottom: 0;
   }
+  @media (max-width: 960px) {
+    [data-visitor-shell="day-rail"] .src-front-col-latest > .src-col-heading {
+      margin-bottom: 12px;
+    }
+  }
   [data-visitor-shell="day-rail"] .src-kicker {
     display: flex;
     flex-wrap: wrap;

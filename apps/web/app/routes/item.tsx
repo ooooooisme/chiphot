@@ -25,7 +25,7 @@ import { OutlineSheet } from "../components/ui/OutlineSheet";
 import { scrollToAnchor } from "../lib/motion";
 import { takePreview } from "../features/item/preview";
 import { IconArrowLeft, IconCopy, IconDownload, IconExternal, IconImage, IconMenu, IconMore, IconShare } from "../components/icons";
-import { BarButton, PhoneBar } from "../components/shell/PhoneBar";
+import { ArticleBackButton, BarButton, PhoneBar, type BackTarget } from "../components/shell/PhoneBar";
 import { isPhone, type Screen } from "../components/shell/screens";
 import { isDayRailShell } from "../lib/visitor-shell";
 import { DayRailFeedChrome } from "../features/feed/DayRailChrome";
@@ -378,7 +378,7 @@ function ItemView({ item }: { item: SiteItemDetail }) {
       >
         {originalLabel} <IconExternal size={13} />
       </a>
-      <StarButton item={item} size={32} />
+      {!dayRail && <StarButton item={item} size={32} />}
       {moreMenu}
     </div>
   );
@@ -470,7 +470,7 @@ function ItemView({ item }: { item: SiteItemDetail }) {
               </>
             )}
             {item.selected && (
-              <span className="ml-1 lg:hidden">
+              <span className={dayRail ? "ml-1" : "ml-1 lg:hidden"}>
                 {item.sameEvent ? <SameEventBadge /> : <SelectedBadge />}
               </span>
             )}
@@ -610,7 +610,7 @@ function ItemView({ item }: { item: SiteItemDetail }) {
       )}
       {dayRail ? <div className="lg:hidden">{phoneBar}</div> : phoneBar}
       {dayRail ? (
-        <SourceArticleShell onBack={back}>
+        <SourceArticleShell back={{ to: item.selected ? "/" : "/all", label: item.selected ? "精选" : "全部" }}>
           {articleInner}
         </SourceArticleShell>
       ) : (
@@ -655,12 +655,12 @@ function ItemView({ item }: { item: SiteItemDetail }) {
   );
 }
 
-function SourceArticleShell({ children, onBack }: { children: React.ReactNode; onBack: () => void }) {
+function SourceArticleShell({ children, back }: { children: React.ReactNode; back: BackTarget }) {
   return (
     <div className="src-container mx-auto max-w-[var(--src-read,680px)] pt-4 lg:pt-6">
-      <button type="button" onClick={onBack} className="mb-5 hidden items-center gap-1.5 text-[13px] text-ink-3 hover:text-ink lg:inline-flex">
-        <IconArrowLeft size={16} /> 返回
-      </button>
+      <div className="mb-3 hidden lg:block">
+        <ArticleBackButton {...back} className="h-9 pl-0 text-[15px]" />
+      </div>
       {children}
     </div>
   );

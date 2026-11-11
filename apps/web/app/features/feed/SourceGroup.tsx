@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router";
 import type { GroupInfo, GroupReport, TimelineFilters } from "@aihot/contracts/site";
 import { Collapse } from "../../components/ui/Presence";
-import { monthDayTime } from "../../lib/format";
+import { sourceListTime } from "../../lib/format";
 import { listPath, filterParams } from "../../lib/seo";
 import { useReadSet } from "../../lib/local-state";
 import { readTone } from "./parts";
@@ -46,7 +46,7 @@ export function SourceGroupLead({ group, parentId, filters }: { group: GroupInfo
                 {r.title}
               </Link>
               <span className="ml-2 text-ink-3">
-                {r.source.name} · {monthDayTime(r.timelineAt)}
+                {r.source.name} · {sourceListTime(r.timelineAt)}
               </span>
             </li>
           ))}
