@@ -603,6 +603,7 @@ function ItemView({ item }: { item: SiteItemDetail }) {
     <PhoneBar
       back={articleBack}
       backClassName="src-article-back"
+      contentInset={dayRail}
       title={isX ? item.x!.authorName : item.title}
       actions={
         <BarButton label="更多操作" onClick={() => setActionsOpen(true)}>

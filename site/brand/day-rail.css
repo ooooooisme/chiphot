@@ -108,14 +108,17 @@ html[data-visitor-shell="day-rail"] body {
   [data-visitor-shell="day-rail"] .src-brand-tail {
     color: var(--src-ink);
   }
-  [data-visitor-shell="day-rail"] .src-article-back {
-    padding-left: var(--src-pad);
+  /* ChevronLeft path starts at x=8 in a 24×24 viewBox; pull SVG box left so the stroke aligns with titles. */
+  [data-visitor-shell="day-rail"] {
+    --src-back-chevron-size: 25px;
+    --src-back-chevron-inset: calc(var(--src-back-chevron-size) * 8 / 24);
   }
-  @media (min-width: 961px) {
-    [data-visitor-shell="day-rail"] .src-article-back {
-      padding-left: 0;
-      margin-left: 0;
-    }
+  [data-visitor-shell="day-rail"] .src-article-back-chevron {
+    margin-left: calc(-1 * var(--src-back-chevron-inset));
+  }
+  [data-visitor-shell="day-rail"] header[data-phone-bar][data-src-inset] {
+    margin-inline: 0;
+    padding-inline: 0;
   }
   [data-visitor-shell="day-rail"] .src-article-title {
     font-size: 24px;
