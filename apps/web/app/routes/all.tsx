@@ -17,6 +17,7 @@ import { isPhone, type Screen } from "../components/shell/screens";
 import { openSearch } from "../features/search/SearchOverlay";
 import { addRecentSearch } from "../lib/local-state";
 import { isDayRailShell } from "../lib/visitor-shell";
+import { DayRailFeedChrome } from "../features/feed/DayRailChrome";
 
 export const handle: Screen = { tab: "featured", name: "全部" };
 export { pageHeaders as headers } from "../lib/api.server";
@@ -107,10 +108,12 @@ export default function AllPage() {
             </button>
           }
         />
+      ) : dayRail ? (
+        <DayRailFeedChrome base="/all" category={f.category} channel={f.channel} />
       ) : (
         <FeedBar base="/all" category={f.category} channel={f.channel} />
       )}
-      <ActiveFilters base="/all" category={f.category} channel={f.channel} tag={f.tag} />
+      {!dayRail && <ActiveFilters base="/all" category={f.category} channel={f.channel} tag={f.tag} />}
 
       {/* Desktop, as on 精选: the title, then one filter row with the search field aligned on the right. */}
       {!dayRail && (
@@ -122,12 +125,6 @@ export default function AllPage() {
           </div>
         </div>
       )}
-      {dayRail && !f.q && (
-        <div className="mb-3 hidden lg:block">
-          <CategoryTabs base="/all" category={f.category} channel={f.channel} layoutId="all-cat-desk" className="min-w-0" />
-        </div>
-      )}
-
       {f.q && (
         <div className="mb-3 mt-1 flex flex-wrap items-center justify-between gap-2 lg:mt-0">
           <PillTabs
@@ -145,7 +142,7 @@ export default function AllPage() {
 
       <div className={`transition-opacity duration-200 ${busy ? "opacity-50" : ""}`}>
         {data.items.length === 0 ? (
-          <div className="mt-2 lg:card">
+          <div className={dayRail ? "src-container mt-2 py-8" : "mt-2 lg:card"}>
             <EmptyState
               title={dayRail ? "这一栏暂时没有条目" : "没有找到相关内容"}
               action={

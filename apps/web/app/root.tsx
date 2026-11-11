@@ -24,6 +24,14 @@ import { titled } from "./lib/seo";
 import { webModules } from "./site-modules";
 
 export const links: Route.LinksFunction = () => [
+  ...(VISITOR_SHELL === "day-rail"
+    ? [
+        {
+          rel: "stylesheet",
+          href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;550;600;650;680;700;750;800;850&family=Noto+Sans+SC:wght@400;600;650;680;700;750;800&display=swap",
+        },
+      ]
+    : []),
   { rel: "icon", href: "/favicon.ico", sizes: "any" },
   { rel: "icon", type: "image/png", href: "/icon.png" },
   { rel: "apple-touch-icon", href: "/apple-icon.png" },
@@ -56,7 +64,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta charSet="utf-8" />
         {documentRelease && <meta name="aihot-release" content={documentRelease} />}
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <meta name="theme-color" media="(prefers-color-scheme: light)" content="#faf9f6" />
+        <meta name="theme-color" media="(prefers-color-scheme: light)" content={VISITOR_SHELL === "day-rail" ? "#ffffff" : "#faf9f6"} />
         <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#13191c" />
         <meta name="apple-mobile-web-app-title" content={SITE.name} />
         <script dangerouslySetInnerHTML={{ __html: APPEARANCE_BOOT_SCRIPT }} />
@@ -104,14 +112,14 @@ function SiteShell({ changelogVersion, children }: { changelogVersion: string | 
         id="main"
         className={
           dayRail
-            ? "min-w-0 flex-1 pb-[calc(72px+env(safe-area-inset-bottom))] lg:pb-10"
+            ? "min-w-0 flex-1 pb-[calc(16px+env(safe-area-inset-bottom))] lg:pb-10"
             : "min-w-0 flex-1 pb-[calc(72px+env(safe-area-inset-bottom))] lg:px-7 lg:pb-[72px] lg:pt-6"
         }
       >
         <div
           className={
             dayRail
-              ? "mx-auto w-full max-w-[var(--ch-content-max,720px)] px-4 pt-3 lg:px-6 lg:pt-5"
+              ? "mx-auto w-full pt-0"
               : "mx-auto w-full max-w-[640px] pl-[var(--gutter-l)] pr-[var(--gutter-r)] lg:max-w-[var(--page-max-wide)] lg:px-0"
           }
         >

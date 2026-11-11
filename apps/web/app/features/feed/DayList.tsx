@@ -9,11 +9,17 @@ import { byBeijingDay } from "../../lib/format";
 import { markRead, useReadSet } from "../../lib/local-state";
 import { DayHeader, TimelineSlot } from "./Timeline";
 import { FeedItem } from "./FeedItem";
+import { isDayRailShell } from "../../lib/visitor-shell";
+import { SourceEarlierFromItems } from "./SourceList";
 
 export function DayList({ items, todayCount = null, headerAside }: { items: FeedItemSummary[]; todayCount?: number | null; headerAside?: React.ReactNode }) {
   const readSet = useReadSet();
   const today = beijingDate(Date.now());
+  const dayRail = isDayRailShell();
   const days = useMemo(() => byBeijingDay(items, (it) => it.timelineAt), [items]);
+  if (dayRail) {
+    return <SourceEarlierFromItems items={items} today={today} />;
+  }
   return (
     <div>
       {days.map(({ day, entries: list }, i) => (
