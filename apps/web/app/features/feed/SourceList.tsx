@@ -1,17 +1,16 @@
 import type { FeedItemSummary, TimelineCard } from "@aihot/contracts/site";
 import { IntentLink } from "../../components/ui/IntentLink";
-import { byBeijingDay, monthDay, monthDayTime, weekdayShort } from "../../lib/format";
+import { byBeijingDay, monthDay, weekdayShort } from "../../lib/format";
 import { markRead, useReadSet } from "../../lib/local-state";
 import { rememberPreview } from "../item/preview";
-import { beijingDate } from "@aihot/contracts/time";
+import { beijingDate, beijingTime } from "@aihot/contracts/time";
 
 function sourceName(item: FeedItemSummary): string {
   return item.channel === "x" && item.x ? item.x.authorName : item.source.name;
 }
 
-function EarlierRow({ item, at, day }: { item: FeedItemSummary; at: string; day?: string }) {
+function EarlierRow({ item, at, underDayBand = false }: { item: FeedItemSummary; at: string; underDayBand?: boolean }) {
   const read = useReadSet().has(item.id);
-  const dateLabel = day ? monthDay(day) : monthDay(beijingDate(at));
   const open = () => {
     rememberPreview(item);
     markRead(item.id);
@@ -19,8 +18,7 @@ function EarlierRow({ item, at, day }: { item: FeedItemSummary; at: string; day?
   return (
     <li className="src-earlier-row">
       <time dateTime={at} className="text-[13px] font-semibold text-ink-3 max-lg:text-[12.5px]">
-        {dateLabel}
-        <span className="block font-normal lg:hidden">{weekdayShort(beijingDate(at))} · {monthDayTime(at).split(" ").slice(-1)}</span>
+        {underDayBand ? beijingTime(at) : monthDay(beijingDate(at))}
       </time>
       <h3 className="text-[16px] font-bold leading-[1.4]">
         <IntentLink viewTransition to={`/items/${item.id}`} onClick={open} className={`hover:text-accent ${read ? "text-ink-3" : "text-ink"}`}>
@@ -48,7 +46,7 @@ export function SourceEarlierFromCards({ cards, today }: { cards: TimelineCard[]
             <div className="src-day-band">{day === today ? "今天" : monthDay(day)} · {weekdayShort(day)}</div>
             <ul className="list-none">
               {entries.map((c) => (
-                <EarlierRow key={c.key} item={c.item} at={c.anchorAt} day={day} />
+                <EarlierRow key={c.key} item={c.item} at={c.anchorAt} underDayBand />
               ))}
             </ul>
           </li>
@@ -78,7 +76,7 @@ export function SourceEarlierFromItems({ items, today }: { items: FeedItemSummar
                   {day === today ? "今天" : monthDay(day)} · {weekdayShort(day)}
                 </div>
               )}
-              <EarlierRow item={it} at={it.timelineAt} day={day} />
+              <EarlierRow item={it} at={it.timelineAt} underDayBand />
             </li>
           );
         })}

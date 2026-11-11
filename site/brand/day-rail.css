@@ -2,6 +2,11 @@
    NOTICE: Newspaper column rules and section spacing adapted from TryGhost/Source (MIT),
    https://github.com/TryGhost/Source */
 
+html[data-visitor-shell="day-rail"],
+html[data-visitor-shell="day-rail"] body {
+  background-color: #ffffff;
+}
+
 [data-visitor-shell="day-rail"] {
   --src-ink: #141414;
   --src-ink2: #4a4a46;
@@ -16,10 +21,15 @@
   --src-pad-lg: 40px;
   --font-sans: Inter, "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
 
-  --bg: var(--src-page);
-  --surface: var(--src-page);
-  --sidebar: var(--src-page);
-  --daybar: var(--src-page);
+  --bg: #ffffff;
+  --bg-sunk: #ffffff;
+  --well: #ffffff;
+  --bg-muted: #ffffff;
+  --surface: #ffffff;
+  --sidebar: #ffffff;
+  --daybar: #ffffff;
+  --raised: #ffffff;
+  --surface-2: #ffffff;
   --ink: var(--src-ink);
   --ink-2: var(--src-ink2);
   --ink-3: var(--src-mute);
@@ -141,6 +151,7 @@
   [data-visitor-shell="day-rail"] .src-front {
     border-bottom: 1px solid var(--src-ink);
   }
+  /* Ink rule sits inside .src-container padding, not full viewport */
   [data-visitor-shell="day-rail"] .src-front-grid {
     display: grid;
     padding: 22px 0 8px;

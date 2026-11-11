@@ -135,11 +135,13 @@ export function SourceFront({ cards, filters }: { cards: TimelineCard[]; filters
   const secondary = cards.slice(1, 3);
   const latest = cards.slice(3, 7);
   return (
-    <section className="src-front src-container" aria-label="头版">
-      <div className="src-front-grid">
-        <LeadColumn card={lead} filters={filters} />
-        {secondary.length > 0 && <SecondaryColumn cards={secondary} />}
-        {latest.length > 0 && <LatestColumn cards={latest} />}
+    <section className="src-container" aria-label="头版">
+      <div className="src-front">
+        <div className="src-front-grid">
+          <LeadColumn card={lead} filters={filters} />
+          {secondary.length > 0 && <SecondaryColumn cards={secondary} />}
+          {latest.length > 0 && <LatestColumn cards={latest} />}
+        </div>
       </div>
     </section>
   );
