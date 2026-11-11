@@ -108,11 +108,14 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
 export function organizationLd() {
   const base = siteUrl();
   const founder = SITE.organization.founder;
+  const orgName = SITE.locale.startsWith("zh") ? SITE.name : SITE.organization.name;
+  const orgAlternateName = SITE.locale.startsWith("zh") ? SITE.organization.name : SITE.name;
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
     "@id": `${base}/#organization`,
-    name: SITE.organization.name,
+    name: orgName,
+    alternateName: orgAlternateName,
     url: base,
     logo: `${base}/icon.png`,
     ...(founder ? {
