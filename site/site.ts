@@ -1,4 +1,4 @@
-// 站点身份和读者看得到的文案。ChipHOT：元器件／电子分销行业热点站。
+// 站点身份和读者看得到的文案。热芯网：元器件／电子分销行业热点站。
 // 网页和后端都读它；改完重新构建（docker compose up --build）即可生效。
 // 域名不在这里：部署时用环境变量 SITE_URL 设置。
 
@@ -20,13 +20,13 @@ export const EDITION_WHEN = {
 
 export const SITE = {
   /** 站名：导航、页面标题、分享图、RSS、MCP、后台都用它。 */
-  name: "ChipHOT",
+  name: "热芯网",
   /**
    * 行业词：拼进默认说法里，比如“元器件日报”“元器件动态”。
    */
   subject: "元器件",
   /** 首页的完整标题（浏览器标签、搜索结果）。 */
-  homeTitle: "ChipHOT — 元器件／半导体供应链精选与日报",
+  homeTitle: "热芯网｜元器件与半导体供应链精选、日报",
   /** 主题目录页（/topics）的标题。 */
   topicsTitle: "主题：制造、封装、存储、设计与分销",
   /** 反馈表单输入框里的示例。 */
@@ -42,7 +42,7 @@ export const SITE = {
   /** 一行小字：分享图、海报下方。 */
   tagline: "半导体与元器件供应链动态",
   /** 搜索引擎读到的关键词（首页结构化数据）。 */
-  keywords: ["元器件", "半导体", "芯片", "电子分销", "供应链", "ChipHOT"] as string[],
+  keywords: ["元器件", "半导体", "芯片", "电子分销", "供应链", "热芯网", "ChipHOT"] as string[],
   /** 网站开始收录的年份（结构化数据的时间范围，选填）。 */
   since: null as string | null,
   /** 界面语言（HTML lang、og:locale）。 */
@@ -147,13 +147,13 @@ interface ContactCard {
 
 /** 关于页的文案。数字（信源数、收录数、精选数、日报期数）来自站内实时统计，不用写在这里。 */
 export const ABOUT = {
-  kicker: `关于 ${SITE.name}`,
+  kicker: "关于热芯网",
   /** 页面描述（搜索结果、分享卡片）。 */
   description: `关于 ${SITE.name}：${SITE.description}`,
   /** 大标题：第一行正常颜色，第二行强调色。 */
   headline: ["半导体和元器件这边，", "每天跟几条就够了。"],
   /** 标题下面的一段话。{sources} 会换成实时的信源数（两边自动加空格，所以 {sources} 两边不写空格）；统计没取到时换成 sourcesFallback。 */
-  lead: `${SITE.name} 替你盯着{sources}个信源，筛过再上精选，${EDITION_WHEN.daily} 出一份日报。免费，不用注册。`,
+  lead: "热芯网替你盯着{sources}个信源，筛过再上精选，每天 08:00 出一份日报。免费，不用注册。",
   sourcesFallback: "十几",
   /** 信源河动画下面的四个环节。 */
   steps: {
@@ -199,12 +199,12 @@ export const AGENT = {
 /** 日报、周报、月报版面上的说法。 */
 export const REPORTS = {
   /** 报头下面的出版者一行。 */
-  imprint: SITE.name.toUpperCase(),
+  imprint: "热芯网",
   /** 报头旁边的一个词。 */
   motto: SITE.subject as string,
   /** 每种报告页面的描述（搜索结果、分享卡片），不带句号；llms.txt 介绍周报、月报时也用它。 */
   descriptions: {
-    daily: `${SITE.name} ${subjectAfter(`${EDITION_WHEN.daily}（北京时间）出的`, "日报")}`,
+    daily: "热芯网每天 08:00（北京时间）出的元器件日报",
     weekly: subjectAfter("每周", "回顾"),
     monthly: subjectAfter("每月", "盘点"),
   },
@@ -259,7 +259,7 @@ export const CARDS: Record<string, { kicker: string; title: string; subtitle: st
   privacy: { kicker: "隐私说明", title: `${SITE.name} 隐私说明`, subtitle: "访问日志、浏览器本地数据与反馈资料的处理方式。" },
   changelog: { kicker: "更新日志", title: `${SITE.name} 更新日志`, subtitle: "功能更新、优化、公告与下线记录。" },
   feedback: { kicker: "反馈", title: "告诉我们哪里可以更好", subtitle: "内容、功能、接入，或来源方的更正与下架请求。" },
-  agent: { kicker: "Agent 接入", title: `把 ${SITE.name} 接到你的 Agent`, subtitle: "MCP、RSS、API 三种方式，匿名只读，无需 API Key。" },
+  agent: { kicker: "Agent 接入", title: "把热芯网接到你的 Agent", subtitle: "MCP、RSS、API 三种方式，匿名只读，无需 API Key。" },
 };
 
 /** 公开接口的访问约定里随部署而变的几处：给 Agent 的使用说明、llms.txt 会写。 */

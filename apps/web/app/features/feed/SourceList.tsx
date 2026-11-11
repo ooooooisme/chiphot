@@ -1,15 +1,14 @@
 import type { FeedItemSummary, TimelineCard } from "@aihot/contracts/site";
 import { IntentLink } from "../../components/ui/IntentLink";
-import { byBeijingDay, monthDay, weekdayShort } from "../../lib/format";
+import { sourceListTime } from "../../lib/format";
 import { markRead, useReadSet } from "../../lib/local-state";
 import { rememberPreview } from "../item/preview";
-import { beijingDate, beijingTime } from "@aihot/contracts/time";
 
 function sourceName(item: FeedItemSummary): string {
   return item.channel === "x" && item.x ? item.x.authorName : item.source.name;
 }
 
-function EarlierRow({ item, at, underDayBand = false }: { item: FeedItemSummary; at: string; underDayBand?: boolean }) {
+function EarlierRow({ item, at }: { item: FeedItemSummary; at: string }) {
   const read = useReadSet().has(item.id);
   const open = () => {
     rememberPreview(item);
@@ -18,7 +17,7 @@ function EarlierRow({ item, at, underDayBand = false }: { item: FeedItemSummary;
   return (
     <li className="src-earlier-row">
       <time dateTime={at} className="text-[13px] font-semibold text-ink-3 max-lg:text-[12.5px]">
-        {underDayBand ? beijingTime(at) : monthDay(beijingDate(at))}
+        {sourceListTime(at)}
       </time>
       <h3 className="text-[16px] font-bold leading-[1.4]">
         <IntentLink viewTransition to={`/items/${item.id}`} onClick={open} className={`hover:text-accent ${read ? "text-ink-3" : "text-ink"}`}>
@@ -30,9 +29,8 @@ function EarlierRow({ item, at, underDayBand = false }: { item: FeedItemSummary;
   );
 }
 
-export function SourceEarlierFromCards({ cards, today }: { cards: TimelineCard[]; today: string }) {
+export function SourceEarlierFromCards({ cards }: { cards: TimelineCard[]; today?: string }) {
   if (cards.length === 0) return null;
-  const days = byBeijingDay(cards, (c) => c.anchorAt);
   return (
     <section className="src-earlier" aria-labelledby="src-earlier-heading">
       <div className="src-container">
@@ -41,45 +39,25 @@ export function SourceEarlierFromCards({ cards, today }: { cards: TimelineCard[]
         </h2>
       </div>
       <ol className="src-container list-none">
-        {days.map(({ day, entries }) => (
-          <li key={day}>
-            <div className="src-day-band">{day === today ? "今天" : monthDay(day)} · {weekdayShort(day)}</div>
-            <ul className="list-none">
-              {entries.map((c) => (
-                <EarlierRow key={c.key} item={c.item} at={c.anchorAt} underDayBand />
-              ))}
-            </ul>
-          </li>
+        {cards.map((c) => (
+          <EarlierRow key={c.key} item={c.item} at={c.anchorAt} />
         ))}
       </ol>
     </section>
   );
 }
 
-export function SourceEarlierFromItems({ items, today }: { items: FeedItemSummary[]; today: string }) {
+export function SourceEarlierFromItems({ items }: { items: FeedItemSummary[]; today?: string }) {
   if (items.length === 0) return null;
-  let lastDay = "";
   return (
     <section className="src-container src-earlier" aria-labelledby="src-earlier-heading">
       <h2 id="src-earlier-heading" className="src-col-heading mb-5">
         更早
       </h2>
       <ol className="list-none">
-        {items.map((it) => {
-          const day = beijingDate(it.timelineAt);
-          const showBand = day !== lastDay;
-          lastDay = day;
-          return (
-            <li key={it.id}>
-              {showBand && (
-                <div className="src-day-band">
-                  {day === today ? "今天" : monthDay(day)} · {weekdayShort(day)}
-                </div>
-              )}
-              <EarlierRow item={it} at={it.timelineAt} underDayBand />
-            </li>
-          );
-        })}
+        {items.map((it) => (
+          <EarlierRow key={it.id} item={it} at={it.timelineAt} />
+        ))}
       </ol>
     </section>
   );

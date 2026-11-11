@@ -6,7 +6,7 @@ import { ITEM_COPY, SITE } from "@aihot/site";
 import { cachedPage, loadOr404 } from "../lib/api.server";
 import { pageReuse } from "../lib/page-reuse";
 import { articleLd, breadcrumbLd, pageMeta, siteUrl, titled } from "../lib/seo";
-import { fullDateTime, relativeTime } from "../lib/format";
+import { fullDateTime, relativeTime, sourceListTime } from "../lib/format";
 import { markRead } from "../lib/local-state";
 import { copyText } from "../lib/clipboard";
 import { SameEventBadge, SelectedBadge } from "../components/ui/Badge";
@@ -443,7 +443,7 @@ function ItemView({ item }: { item: SiteItemDetail }) {
   );
 
   const titleClass = dayRail
-    ? "text-[24px] font-extrabold leading-[1.28] tracking-[-0.02em] text-ink lg:text-[30px]"
+    ? "src-article-title"
     : "text-[26px] font-bold leading-[1.38] tracking-[-0.01em] text-ink lg:text-[32px] lg:leading-[1.34] xl:text-[36px] xl:leading-[1.3]";
 
   const articleInner = (
@@ -452,10 +452,23 @@ function ItemView({ item }: { item: SiteItemDetail }) {
             <span className="font-semibold text-ink-2">{isX ? item.x!.authorName : item.source.name}</span>
             {isX && <span>· @{item.x!.handle} · X</span>}
             {item.author && !isX && <span>· {item.author}</span>}
-            <span>·</span>
-            {!item.publishedAt && <span>收录于</span>}
-            <time dateTime={shownAt} className="mono">{fullDateTime(shownAt)}</time>
-            <span suppressHydrationWarning>· {relativeTime(shownAt)}</span>
+            {!dayRail && (
+              <>
+                <span>·</span>
+                {!item.publishedAt && <span>收录于</span>}
+                <time dateTime={shownAt} className="mono">
+                  {fullDateTime(shownAt)}
+                </time>
+                <span suppressHydrationWarning>· {relativeTime(shownAt)}</span>
+              </>
+            )}
+            {dayRail && (
+              <>
+                <span>·</span>
+                {!item.publishedAt && <span>收录于</span>}
+                <time dateTime={shownAt}>{sourceListTime(shownAt)}</time>
+              </>
+            )}
             {item.selected && (
               <span className="ml-1 lg:hidden">
                 {item.sameEvent ? <SameEventBadge /> : <SelectedBadge />}

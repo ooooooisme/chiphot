@@ -144,6 +144,33 @@
   --selection: rgba(23, 107, 117, 0.16);
 }
 
+:root[data-visitor-shell="day-rail"] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --bg-sunk: #ffffff;
+  --bg-muted: #ffffff;
+  --well: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #ffffff;
+  --raised: #ffffff;
+  --sidebar: #ffffff;
+  --daybar: #ffffff;
+  --ink: #141414;
+  --ink-2: #4a4a46;
+  --ink-3: #8a877f;
+  --ink-4: #8a877f;
+  --line: #e5e3dd;
+  --line-strong: #e5e3dd;
+  --line-soft: #e5e3dd;
+  --accent: #0b6e4f;
+  --accent-ink: #0b6e4f;
+  --accent-soft: rgba(11, 110, 79, 0.08);
+  --accent-softer: rgba(11, 110, 79, 0.05);
+  --accent-contrast: #ffffff;
+  --prose-ink: #141414;
+  --selection: rgba(11, 110, 79, 0.16);
+}
+
 @media (min-width: 961px) {
   /* Desktop sidebar shell has no top bar; day-rail keeps --ch-topbar-h via data-visitor-shell. */
   :root:not([data-visitor-shell="day-rail"]) {

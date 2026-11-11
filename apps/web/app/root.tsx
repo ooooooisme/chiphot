@@ -10,6 +10,7 @@ import type { Route } from "./+types/root";
 import "./app.css";
 import { Sidebar } from "./components/shell/Sidebar";
 import { DayRailTopBar } from "./components/shell/DayRailTopBar";
+import { DayRailFooter } from "./components/shell/DayRailFooter";
 import { TabBar } from "./components/shell/TabBar";
 import { isDayRailShell } from "./lib/visitor-shell";
 import { PullToRefresh } from "./components/shell/PullToRefresh";
@@ -127,6 +128,7 @@ function SiteShell({ changelogVersion, children }: { changelogVersion: string | 
           {children}
         </div>
       </main>
+      {dayRail ? <DayRailFooter /> : null}
       <TabBar changelogVersion={changelogVersion} />
       {interactive && <SearchOverlay />}
       {interactive && <PullToRefresh />}

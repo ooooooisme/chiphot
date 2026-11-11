@@ -3,6 +3,7 @@ import { SITE } from "@aihot/site";
 import { IntentLink } from "../ui/IntentLink";
 import { beijingDate, beijingWeekday } from "@aihot/contracts/time";
 import { monthDay } from "../../lib/format";
+import { BrandWordmark } from "@aihot/site/brand/Logo.tsx";
 import { primaryNav, sidebarIsActive, type NavItem } from "./nav";
 import { IconSearch } from "../icons";
 import { openSearch } from "../../features/search/SearchOverlay";
@@ -23,11 +24,7 @@ function MastNavLink({ item }: { item: NavItem }) {
 }
 
 function MastheadWordmark({ home }: { home: boolean }) {
-  const inner = (
-    <>
-      Chip<span className="text-accent">HOT</span>
-    </>
-  );
+  const inner = <BrandWordmark />;
   if (home) {
     return (
       <h1 className="src-wordmark">

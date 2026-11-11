@@ -90,9 +90,10 @@ html[data-visitor-shell="day-rail"] body {
     }
   }
   [data-visitor-shell="day-rail"] .src-wordmark {
+    font-family: "Noto Sans CJK SC", "Noto Sans SC", "PingFang SC", sans-serif;
     font-size: 22px;
-    font-weight: 850;
-    letter-spacing: -0.02em;
+    font-weight: 900;
+    letter-spacing: 0.04em;
     color: var(--src-ink);
     text-align: center;
   }
@@ -100,6 +101,27 @@ html[data-visitor-shell="day-rail"] body {
     [data-visitor-shell="day-rail"] .src-wordmark {
       font-size: 28px;
     }
+  }
+  [data-visitor-shell="day-rail"] .src-brand-hot {
+    color: var(--src-green);
+  }
+  [data-visitor-shell="day-rail"] .src-brand-tail {
+    color: var(--src-ink);
+  }
+  [data-visitor-shell="day-rail"] .src-article-title {
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.28;
+    letter-spacing: -0.02em;
+    color: var(--src-ink);
+  }
+  @media (min-width: 961px) {
+    [data-visitor-shell="day-rail"] .src-article-title {
+      font-size: 30px;
+    }
+  }
+  [data-visitor-shell="day-rail"] .src-site-footer a {
+    transition: color 120ms;
   }
   [data-visitor-shell="day-rail"] .src-nav-primary {
     display: flex;
@@ -233,15 +255,6 @@ html[data-visitor-shell="day-rail"] body {
     [data-visitor-shell="day-rail"] .src-earlier-row {
       grid-template-columns: 120px 1fr 200px;
     }
-  }
-  [data-visitor-shell="day-rail"] .src-day-band {
-    padding: 20px 0 8px;
-    font-size: 12px;
-    font-weight: 750;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--src-ink);
-    border-bottom: 1px solid var(--src-ink);
   }
   [data-visitor-shell="day-rail"] .src-article-body {
     font-size: 16px;
