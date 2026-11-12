@@ -264,7 +264,7 @@ export default function FeedbackPage() {
                 </span>
               </button>
             )}
-            <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(e) => pick(e.target.files?.[0])} />
+            <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" aria-label="添加一张问题截图" className="sr-only" onChange={(e) => pick(e.target.files?.[0])} />
           </div>
 
           <Presence show={state.kind === "error"} enter="anim-notice-in" exit="anim-fade-out" duration={160}>
@@ -277,7 +277,7 @@ export default function FeedbackPage() {
         <div className="flex flex-col-reverse gap-4 border-t border-line-soft bg-bg-sunk/50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:bg-bg-muted/30">
           <p className="text-[12px] leading-relaxed text-ink-4 sm:max-w-[400px]">
             请勿提交密钥、身份证件或与问题无关的敏感信息。提交即表示你知悉反馈内容、选填邮箱、页面信息和截图将按
-            <Link viewTransition to="/privacy" className="text-accent hover:underline">
+            <Link viewTransition to="/privacy" className="text-accent underline underline-offset-2">
               隐私说明
             </Link>
             处理。
