@@ -6,7 +6,7 @@ import { ITEM_COPY, SITE } from "@aihot/site";
 import { cachedPage, loadOr404 } from "../lib/api.server";
 import { pageReuse } from "../lib/page-reuse";
 import { articleLd, breadcrumbLd, pageMeta, siteUrl, titled } from "../lib/seo";
-import { fullDateTime, relativeTime } from "../lib/format";
+import { fullDateTime, relativeTime, sourceListTime } from "../lib/format";
 import { markRead } from "../lib/local-state";
 import { copyText } from "../lib/clipboard";
 import { SameEventBadge, SelectedBadge } from "../components/ui/Badge";
@@ -25,8 +25,11 @@ import { OutlineSheet } from "../components/ui/OutlineSheet";
 import { scrollToAnchor } from "../lib/motion";
 import { takePreview } from "../features/item/preview";
 import { IconArrowLeft, IconCopy, IconDownload, IconExternal, IconImage, IconMenu, IconMore, IconShare } from "../components/icons";
-import { BarButton, PhoneBar } from "../components/shell/PhoneBar";
+import { ArticleBackButton, BarButton, PhoneBar, type BackTarget } from "../components/shell/PhoneBar";
 import { isPhone, type Screen } from "../components/shell/screens";
+import { isDayRailShell } from "../lib/visitor-shell";
+import { DayRailFeedChrome } from "../features/feed/DayRailChrome";
+import type { CategoryKey } from "@aihot/contracts/taxonomy";
 
 export const handle: Screen = { home: "featured", toolbar: true };
 export { pageHeaders as headers } from "../lib/api.server";
@@ -275,6 +278,7 @@ function ItemGone() {
 }
 
 function ItemView({ item }: { item: SiteItemDetail }) {
+  const dayRail = isDayRailShell();
   const navigate = useNavigate();
   const hasTranslation = item.hasTranslation;
   const lang = item.bodyLanguage;
@@ -374,7 +378,7 @@ function ItemView({ item }: { item: SiteItemDetail }) {
       >
         {originalLabel} <IconExternal size={13} />
       </a>
-      <StarButton item={item} size={32} />
+      {!dayRail && <StarButton item={item} size={32} />}
       {moreMenu}
     </div>
   );
@@ -438,51 +442,42 @@ function ItemView({ item }: { item: SiteItemDetail }) {
     </>
   );
 
-  return (
-    <div className="mx-auto max-w-[var(--page-max-reading)] pb-8">
-      {item.body && <ReadingProgress />}
+  const titleClass = dayRail
+    ? "src-article-title"
+    : "text-[26px] font-bold leading-[1.38] tracking-[-0.01em] text-ink lg:text-[32px] lg:leading-[1.34] xl:text-[36px] xl:leading-[1.3]";
 
-      {/* Phones: back to where the reader came from, the title once it has scrolled away, more actions. */}
-      <PhoneBar
-        back={{ to: item.selected ? "/" : "/all", label: item.selected ? "精选" : "全部" }}
-        title={isX ? item.x!.authorName : item.title}
-        actions={
-          <BarButton label="更多操作" onClick={() => setActionsOpen(true)}>
-            <IconMore size={22} />
-          </BarButton>
-        }
-      />
+  const articleBack: BackTarget = { to: item.selected ? "/" : "/all", label: item.selected ? "精选" : "全部" };
 
-      {/* The text on the page in one column; back and the facts in the left rail, actions and notes in the right. */}
-      <ArticleLayout
-        left={
-          <>
-            {backButton}
-            {facts}
-            {outline}
-          </>
-        }
-        right={
-          <>
-            {actions}
-            {notes}
-            <div className="flex min-h-0 flex-col space-y-8 2xl:hidden">{outline}</div>
-          </>
-        }
-      >
-        {/* Between lg and 2xl the left rail is hidden: 返回 stays at the top while reading, as on the original site. */}
-        <div className="sticky top-0 z-20 -mx-2 hidden bg-bg/95 px-2 py-1.5 backdrop-blur lg:block 2xl:hidden">{backButton}</div>
-        <article className="pb-6 pt-3 lg:pt-2 2xl:pt-1">
-          <div className={`flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[13px] text-ink-3 2xl:hidden ${isX ? "" : "mb-3"}`}>
+  const articleInner = (
+        <article className={dayRail ? "pb-2" : "pb-6 pt-3 lg:pt-2 2xl:pt-1"}>
+          {dayRail && (
+            <div className="mb-3 hidden lg:block">
+              <ArticleBackButton {...articleBack} className="src-article-back h-9 text-[15px]" />
+            </div>
+          )}
+          <div className={`flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[13px] text-ink-3 ${dayRail ? "mb-3" : `2xl:hidden ${isX ? "" : "mb-3"}`}`}>
             <span className="font-semibold text-ink-2">{isX ? item.x!.authorName : item.source.name}</span>
             {isX && <span>· @{item.x!.handle} · X</span>}
             {item.author && !isX && <span>· {item.author}</span>}
-            <span>·</span>
-            {!item.publishedAt && <span>收录于</span>}
-            <time dateTime={shownAt} className="mono">{fullDateTime(shownAt)}</time>
-            <span suppressHydrationWarning>· {relativeTime(shownAt)}</span>
+            {!dayRail && (
+              <>
+                <span>·</span>
+                {!item.publishedAt && <span>收录于</span>}
+                <time dateTime={shownAt} className="mono">
+                  {fullDateTime(shownAt)}
+                </time>
+                <span suppressHydrationWarning>· {relativeTime(shownAt)}</span>
+              </>
+            )}
+            {dayRail && (
+              <>
+                <span>·</span>
+                {!item.publishedAt && <span>收录于</span>}
+                <time dateTime={shownAt}>{sourceListTime(shownAt)}</time>
+              </>
+            )}
             {item.selected && (
-              <span className="ml-1 lg:hidden">
+              <span className={dayRail ? "ml-1" : "ml-1 lg:hidden"}>
                 {item.sameEvent ? <SameEventBadge /> : <SelectedBadge />}
               </span>
             )}
@@ -492,7 +487,7 @@ function ItemView({ item }: { item: SiteItemDetail }) {
               </span>
             )}
           </div>
-          {!isX && <h1 data-page-title="" className="text-[26px] font-bold leading-[1.38] tracking-[-0.01em] text-ink lg:text-[32px] lg:leading-[1.34] xl:text-[36px] xl:leading-[1.3]">{item.title}</h1>}
+          {!isX && <h1 data-page-title="" className={titleClass}>{item.title}</h1>}
           {!isX && item.originalTitle && <p className="mt-2.5 text-[14px] leading-relaxed text-ink-4">{item.originalTitle}</p>}
 
           {item.summary && (!isX || item.summary.replace(/\s+/g, " ").trim() !== item.title) && (
@@ -502,7 +497,13 @@ function ItemView({ item }: { item: SiteItemDetail }) {
             </section>
           )}
 
-          {item.reason && !summaryOnly && (
+          {dayRail && item.selected && item.reason?.trim() && !summaryOnly && (
+            <section className="mt-6 border-t border-line pt-4">
+              <div className="mb-1 text-[12px] font-semibold text-ink-3">{ITEM_COPY.reasonLabel}</div>
+              <p className="text-[15px] leading-[1.75] text-ink-2">{item.reason}</p>
+            </section>
+          )}
+          {!dayRail && item.reason && !summaryOnly && (
             <section className="mt-6 border-t border-line pt-4 lg:hidden">
               <div className="mb-1 text-[12px] font-semibold text-ink-3">{ITEM_COPY.reasonLabel}</div>
               <p className="text-[15px] leading-[1.75] text-ink-2">{item.reason}</p>
@@ -547,19 +548,21 @@ function ItemView({ item }: { item: SiteItemDetail }) {
               {hasTranslation && lang === "zh" && !item.body.complete && (
                 <p className="mb-5 rounded-control bg-bg-sunk px-3 py-2 text-[13px] text-ink-3">译文尚不完整，完整内容请切换到原文。</p>
               )}
-              <ArticleBody html={bodyHtml} />
+              <div className={dayRail ? "prose prose-day-rail" : undefined}>
+                <ArticleBody html={bodyHtml} />
+              </div>
             </section>
           )}
 
           {isX && item.x!.media.length > 0 && <MediaGallery media={item.x!.media} postUrl={item.links.original} />}
           {isX && item.x!.quoted?.text && <QuotedPost quoted={item.x!.quoted} original={lang === "original"} />}
 
-          <p className="mt-8 text-[13px] text-ink-4">
-            来源：
-            <a href={item.links.original} target="_blank" rel="noopener noreferrer" className="text-ink-3 hover:text-accent">
+          <p className={`mt-8 ${dayRail ? "text-[12.5px] text-ink-3" : "text-[13px] text-ink-4"}`}>
+            {dayRail ? "出处 " : "来源："}
+            <a href={item.links.original} target="_blank" rel="noopener noreferrer" className={dayRail ? "font-semibold text-ink-2 hover:text-accent" : "text-ink-3 hover:text-accent"}>
               {isX ? item.x!.authorName : item.source.name}
             </a>
-            <span> · {hostOf(item.links.original)}</span>
+            {!dayRail && <span> · {hostOf(item.links.original)}</span>}
           </p>
 
           {(item.topics.length > 0 || item.tags.length > 0) && (
@@ -594,7 +597,54 @@ function ItemView({ item }: { item: SiteItemDetail }) {
             </section>
           )}
         </article>
-      </ArticleLayout>
+  );
+
+  const phoneBar = (
+    <PhoneBar
+      back={articleBack}
+      backClassName="src-article-back"
+      contentInset={dayRail}
+      title={isX ? item.x!.authorName : item.title}
+      actions={
+        <BarButton label="更多操作" onClick={() => setActionsOpen(true)}>
+          <IconMore size={22} />
+        </BarButton>
+      }
+    />
+  );
+
+  return (
+    <div className={dayRail ? "pb-10" : "mx-auto max-w-[var(--page-max-reading)] pb-8"}>
+      {item.body && <ReadingProgress />}
+      {dayRail && (
+        <DayRailFeedChrome
+          base={item.selected ? "/" : "/all"}
+          category={(item.category as CategoryKey | null) ?? null}
+          channel="all"
+        />
+      )}
+      {dayRail ? <div className="lg:hidden">{phoneBar}</div> : phoneBar}
+      {dayRail ? <SourceArticleShell>{articleInner}</SourceArticleShell> : (
+        <ArticleLayout
+          left={
+            <>
+              {backButton}
+              {facts}
+              {outline}
+            </>
+          }
+          right={
+            <>
+              {actions}
+              {notes}
+              <div className="flex min-h-0 flex-col space-y-8 2xl:hidden">{outline}</div>
+            </>
+          }
+        >
+          <div className="sticky top-0 z-20 -mx-2 hidden bg-bg/95 px-2 py-1.5 backdrop-blur lg:block 2xl:hidden">{backButton}</div>
+          {articleInner}
+        </ArticleLayout>
+      )}
 
       <ReaderToolbar
         item={item}
@@ -612,6 +662,14 @@ function ItemView({ item }: { item: SiteItemDetail }) {
         </Suspense>
       )}
       <Toast text={toast} />
+    </div>
+  );
+}
+
+function SourceArticleShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="src-container mx-auto max-w-[var(--src-read,680px)] pt-4 lg:pt-6">
+      {children}
     </div>
   );
 }

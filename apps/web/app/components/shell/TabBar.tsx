@@ -6,6 +6,7 @@ import { noteScreen, rememberedTab, useScreen } from "./screens";
 import { markBack } from "./transitions";
 import { scrollBehavior } from "../../lib/motion";
 import { useChangelogDot } from "./Sidebar";
+import { isDayRailShell } from "../../lib/visitor-shell";
 
 const subscribe = () => () => {};
 const serverTab = () => null;
@@ -34,6 +35,7 @@ export function TabBar({ changelogVersion }: { changelogVersion: string | null }
     noteScreen(screen.name, key, active);
   }, [active, key, screen.name, restored]);
   if (screen.toolbar) return null;
+  if (isDayRailShell()) return null;
   return (
     <nav
       aria-label="底部导航"

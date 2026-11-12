@@ -18,6 +18,7 @@ import { markRead, useReadSet } from "../../lib/local-state";
 import { filterParams, hasFeedFilters, listPath } from "../../lib/seo";
 import { isReload, readSnapshot, restoreAnchor, saveSnapshot, useSaveOnLeave } from "../../lib/restore";
 import { isDayRailShell } from "../../lib/visitor-shell";
+import { SourceEarlierFromCards } from "./SourceList";
 
 const AUTO_BATCHES = 3;
 
@@ -92,13 +93,13 @@ export function DayHeader({ day, today, count, collapsed, onToggle, aside, aside
             <IconChevronDown size={14} className={`transition-transform duration-200 ${collapsed ? "-rotate-90" : ""}`} />
           </button>
         ) : null}
-        <span className="text-[13px] text-ink-4">
-          {weekday}
+        <span className={`text-[13px] ${dayRail ? "font-normal text-ink-4" : "text-ink-4"}`}>
+          <span className={dayRail ? "text-ink-3" : ""}>{weekday}</span>
           {count !== null && (
-            <>
+            <span className={dayRail ? "text-ink-4" : ""}>
               {" · "}
               <span className="num">{count}</span> 条
-            </>
+            </span>
           )}
         </span>
         {aside && <span className="ml-auto text-[12px] text-ink-4">{aside}</span>}
@@ -136,7 +137,7 @@ export function TimelineSlot({ at, children, fresh = false, delay = 0, dataKey }
         <span aria-hidden="true" className={`relative ${dayRail ? "block" : "hidden lg:block"}`}>
           <span className={`absolute left-[5px] top-5 w-px group-last/slot:hidden ${dayRail ? "bottom-[-10px] bg-[var(--ch-rail-line,var(--line-strong))]" : "-bottom-[41px] left-[10.5px] top-[29px] bg-line-strong"}`} />
           <span
-            className={`absolute size-[7px] rounded-full bg-accent ${dayRail ? "left-0 top-[18px] shadow-[0_0_0_3px_var(--ch-paper,var(--bg))]" : "left-[7.5px] top-[25.5px] shadow-[0_0_0_4px_var(--bg)]"} transition-transform duration-300 group-hover/slot:scale-[1.15]`}
+            className={`absolute size-[7px] rounded-full bg-accent ${dayRail ? "left-0 top-[18px] shadow-[0_0_0_3px_var(--ch-page,var(--bg))]" : "left-[7.5px] top-[25.5px] shadow-[0_0_0_4px_var(--bg)]"} transition-transform duration-300 group-hover/slot:scale-[1.15]`}
           />
         </span>
         {children}
@@ -145,7 +146,7 @@ export function TimelineSlot({ at, children, fresh = false, delay = 0, dataKey }
   );
 }
 
-export function Timeline({ initial, filters }: { initial: TimelineResponse; filters: TimelineFilters }) {
+export function Timeline({ initial, filters, excludeKeys }: { initial: TimelineResponse; filters: TimelineFilters; excludeKeys?: Set<string> }) {
   const location = useLocation();
   const navigation = useNavigation();
   const readSet = useReadSet();
@@ -293,10 +294,13 @@ export function Timeline({ initial, filters }: { initial: TimelineResponse; filt
     (card: TimelineCard) => !readSet.has(card.item.id) || (card.group?.memberIds?.some((id) => !readSet.has(id)) ?? false),
     [readSet],
   );
-  const days = useMemo(
-    () => byBeijingDay(unreadOnly ? state.cards.filter(unreadVisible) : state.cards, (c) => c.anchorAt),
-    [state.cards, unreadOnly, unreadVisible],
-  );
+  const visibleCards = useMemo(() => {
+    let list = unreadOnly ? state.cards.filter(unreadVisible) : state.cards;
+    if (excludeKeys?.size) list = list.filter((c) => !excludeKeys.has(c.key));
+    return list;
+  }, [state.cards, unreadOnly, unreadVisible, excludeKeys]);
+
+  const days = useMemo(() => byBeijingDay(visibleCards, (c) => c.anchorAt), [visibleCards]);
 
   const visibleCount = useMemo(() => days.reduce((n, d) => n + d.entries.length, 0), [days]);
   // With the filter on, a page whose cards are all read would show nothing: keep paging until
@@ -312,15 +316,28 @@ export function Timeline({ initial, filters }: { initial: TimelineResponse; filt
     setState((s) => ({ ...s, collapsed: s.collapsed.includes(day) ? s.collapsed.filter((d) => d !== day) : [...s.collapsed, day] }));
 
   let order = 0;
-  const unreadToggle = (
+  const dayRail = isDayRailShell();
+  const unreadToggle = !dayRail ? (
     <ToggleChip on={unreadOnly} onToggle={() => setState((s) => ({ ...s, unreadOnly: !s.unreadOnly }))}>
       只看未读
     </ToggleChip>
-  );
+  ) : null;
+
+  if (dayRail) {
+    return (
+      <div className="relative">
+        {visibleCards.length === 0 && !loadingMore && <SourceEmptyState filters={filters} unreadOnly={unreadOnly} state={state} />}
+        <SourceEarlierFromCards cards={visibleCards} today={today} />
+        <div ref={sentinel} aria-hidden="true" />
+        <FeedEnd loading={loadingMore} error={loadError} hasMore={!!state.nextCursor} manual={state.batches >= AUTO_BATCHES} empty={visibleCount === 0} onMore={loadMore} />
+      </div>
+    );
+  }
+
   return (
     <div className="relative">
       {/* Desktop puts it on the first date row; phones, and a list the filter left empty, keep its own row. */}
-      <div className={`mb-2 flex justify-end ${days.length ? "lg:hidden" : ""}`}>{unreadToggle}</div>
+      {unreadToggle && <div className={`mb-2 flex justify-end ${days.length ? "lg:hidden" : ""}`}>{unreadToggle}</div>}
 
       {days.length === 0 && !loadingMore && (
         <div className="lg:card">
@@ -372,6 +389,36 @@ export function Timeline({ initial, filters }: { initial: TimelineResponse; filt
       <FeedEnd loading={loadingMore} error={loadError} hasMore={!!state.nextCursor} manual={state.batches >= AUTO_BATCHES} empty={visibleCount === 0} onMore={loadMore} />
     </div>
   );
+}
+
+function SourceEmptyState({
+  filters,
+  unreadOnly,
+  state,
+}: {
+  filters: TimelineFilters;
+  unreadOnly: boolean;
+  state: ListState;
+}) {
+  return (
+    <SourceEmptyWrap>
+      {unreadOnly ? (
+        state.nextCursor ? (
+          <EmptyState title="这一屏精选都翻过了">往下看更早的。</EmptyState>
+        ) : (
+          <EmptyState title="没有未读的精选内容">精选列表已读完。</EmptyState>
+        )
+      ) : hasFeedFilters(filters) ? (
+        <EmptyState title="这一类暂时没有精选">换个分类，或到全部里按时间翻。</EmptyState>
+      ) : (
+        <EmptyState title="今天的精选还没出来">信源还在跑；也可以先看全部，或等早上的日报。</EmptyState>
+      )}
+    </SourceEmptyWrap>
+  );
+}
+
+function SourceEmptyWrap({ children }: { children: React.ReactNode }) {
+  return <div className="src-container py-8">{children}</div>;
 }
 
 /** The foot of a paged list: loading, retry, "加载更多" after a few automatic pages, or the end. */

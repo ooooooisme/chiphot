@@ -87,7 +87,7 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
     { tagName: "link", rel: "canonical", href: url },
     { property: "og:site_name", content: SITE.name },
     { property: "og:type", content: input.type ?? "website" },
-    { property: "og:title", content: input.title ?? HOME_TITLE },
+    { property: "og:title", content: title },
     { property: "og:description", content: description },
     { property: "og:url", content: url },
     { property: "og:image", content: image },
@@ -95,7 +95,7 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
     { property: "og:image:height", content: "630" },
     { property: "og:locale", content: SITE.locale.replace("-", "_") },
     { name: "twitter:card", content: "summary_large_image" },
-    { name: "twitter:title", content: input.title ?? HOME_TITLE },
+    { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },
     { name: "twitter:image", content: image },
   ];
@@ -108,11 +108,14 @@ export function pageMeta(input: PageMetaInput): MetaDescriptor[] {
 export function organizationLd() {
   const base = siteUrl();
   const founder = SITE.organization.founder;
+  const orgName = SITE.locale.startsWith("zh") ? SITE.name : SITE.organization.name;
+  const orgAlternateName = SITE.locale.startsWith("zh") ? SITE.organization.name : SITE.name;
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
     "@id": `${base}/#organization`,
-    name: SITE.organization.name,
+    name: orgName,
+    alternateName: orgAlternateName,
     url: base,
     logo: `${base}/icon.png`,
     ...(founder ? {

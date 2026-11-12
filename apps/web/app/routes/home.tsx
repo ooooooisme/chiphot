@@ -10,6 +10,8 @@ import { Timeline } from "../features/feed/Timeline";
 import { HotTopics } from "../features/feed/HotTopics";
 import { ActiveFilters, CategoryTabs, FeedBar, SearchField } from "../features/feed/Filters";
 import { DailyReportStrip } from "../features/feed/DailyReportStrip";
+import { DayRailFeedChrome } from "../features/feed/DayRailChrome";
+import { SourceFront, sourceFrontExcludeKeys } from "../features/feed/SourceFront";
 import { isDayRailShell } from "../lib/visitor-shell";
 
 export const handle: Screen = { tab: "featured", name: "精选" };
@@ -44,30 +46,33 @@ export default function Home() {
   const { data, filters, dailyStrip } = useLoaderData<typeof loader>();
   const title = filters.tag ? `#${filters.tag}` : "精选";
   const dayRail = isDayRailShell();
+  const featuredHome = dayRail && !hasFeedFilters(filters) && !filters.category && filters.channel === "all";
+  const excludeKeys = featuredHome ? sourceFrontExcludeKeys(data.cards) : undefined;
   return (
     <div className="pb-6">
-      <FeedBar base="/" category={filters.category} channel={filters.channel} />
-      <ActiveFilters base="/" category={filters.category} channel={filters.channel} tag={filters.tag} />
-      {!dayRail && (
-        <div className="hidden lg:block">
-          <h1 className="text-[24px] font-semibold leading-[1.3] text-ink">{title}</h1>
-          <div className="mb-5 mt-4 flex items-center justify-between gap-4">
-            <CategoryTabs base="/" category={filters.category} channel={filters.channel} layoutId="home-cat-desk" className="min-w-0" />
-            <SearchField keep={{ category: filters.category }} />
+      {dayRail ? (
+        <DayRailFeedChrome base="/" category={filters.category} channel={filters.channel} />
+      ) : (
+        <>
+          <FeedBar base="/" category={filters.category} channel={filters.channel} />
+          <ActiveFilters base="/" category={filters.category} channel={filters.channel} tag={filters.tag} />
+          <div className="hidden lg:block">
+            <h1 className="text-[24px] font-semibold leading-[1.3] text-ink">{title}</h1>
+            <div className="mb-5 mt-4 flex items-center justify-between gap-4">
+              <CategoryTabs base="/" category={filters.category} channel={filters.channel} layoutId="home-cat-desk" className="min-w-0" />
+              <SearchField keep={{ category: filters.category }} />
+            </div>
           </div>
-        </div>
-      )}
-      {dayRail && (
-        <div className="mb-3 hidden lg:block">
-          <CategoryTabs base="/" category={filters.category} channel={filters.channel} layoutId="home-cat-desk" className="min-w-0" />
-        </div>
+        </>
       )}
 
-      {data.hot && inNav("/hot") && <HotTopics entries={data.hot} />}
+      {data.hot && inNav("/hot") && !dayRail && <HotTopics entries={data.hot} />}
 
       {dayRail && dailyStrip && <DailyReportStrip href={dailyStrip.href} issueDate={dailyStrip.issueDate} />}
 
-      <Timeline initial={data} filters={data.filters} />
+      {featuredHome && <SourceFront cards={data.cards} filters={data.filters} />}
+
+      <Timeline initial={data} filters={data.filters} excludeKeys={excludeKeys} />
     </div>
   );
 }

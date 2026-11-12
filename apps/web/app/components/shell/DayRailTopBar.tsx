@@ -1,52 +1,89 @@
 import { Link, useLocation } from "react-router";
 import { SITE } from "@aihot/site";
 import { IntentLink } from "../ui/IntentLink";
+import { beijingDate, beijingWeekday } from "@aihot/contracts/time";
+import { monthDay } from "../../lib/format";
+import { BrandWordmark } from "@aihot/site/brand/Logo.tsx";
+import { primaryNav, sidebarIsActive, type NavItem } from "./nav";
 import { IconSearch } from "../icons";
 import { openSearch } from "../../features/search/SearchOverlay";
-import { primaryNav, sidebarIsActive, type NavItem } from "./nav";
 import { MoreMenu } from "./MoreMenu";
 
-function NavLink({ item }: { item: NavItem }) {
+function MastNavLink({ item }: { item: NavItem }) {
   const { pathname } = useLocation();
   const active = sidebarIsActive(item, pathname);
   return (
     <IntentLink
       to={item.to}
       aria-current={active ? "page" : undefined}
-      className={`text-[13px] transition-colors ${active ? "font-bold text-ink" : "font-medium text-ink-3 hover:text-ink"}`}
+      className={active ? "font-semibold text-accent" : "text-ink-2 transition-colors hover:text-ink"}
     >
       {item.label}
     </IntentLink>
   );
 }
 
-/** Sticky top bar: ChipHOT lockmark, 精选 / 全部 / 日报, search and more. */
-export function DayRailTopBar() {
-  const items = primaryNav();
-  return (
-    <header className="sticky top-0 z-50 border-b border-line bg-surface">
-      <div className="mx-auto flex h-12 min-h-12 max-w-[var(--ch-content-max,720px)] items-center gap-3 px-4 lg:h-[var(--ch-topbar-h,52px)] lg:min-h-[var(--ch-topbar-h,52px)] lg:gap-5 lg:px-6">
-        <Link to="/" className="flex shrink-0 items-center gap-1.5 text-[15px] font-extrabold tracking-[-0.03em] text-ink lg:text-[16px]" aria-label={`${SITE.name} 首页`}>
-          <span aria-hidden="true" className="size-[7px] rounded-full bg-accent" />
-          {SITE.name}
+function MastheadWordmark({ home }: { home: boolean }) {
+  const inner = <BrandWordmark />;
+  if (home) {
+    return (
+      <h1 className="src-wordmark">
+        <Link to="/" className="text-inherit" aria-label={`${SITE.name} 首页`}>
+          {inner}
         </Link>
-        <nav className="flex min-w-0 flex-1 items-center gap-3 lg:gap-4" aria-label="主路径">
-          {items.map((item) => (
-            <NavLink key={item.to} item={item} />
-          ))}
-        </nav>
-        <div className="flex shrink-0 items-center gap-1">
+      </h1>
+    );
+  }
+  return (
+    <Link to="/" className="src-wordmark" aria-label={`${SITE.name} 首页`}>
+      {inner}
+    </Link>
+  );
+}
+
+/** Source-style newspaper masthead: date, wordmark (home h1), primary nav. */
+export function DayRailTopBar() {
+  const { pathname } = useLocation();
+  const home = pathname === "/";
+  const today = beijingDate(Date.now());
+  const dateLine = `${monthDay(today)} ${beijingWeekday(today)}`;
+  const items = primaryNav();
+
+  return (
+    <header className="src-masthead sticky top-0 z-50 bg-bg">
+      <div className="src-container src-masthead-grid">
+        <div className="src-masthead-date">
+          <MastheadDate dateLine={dateLine} tagline={SITE.tagline} />
+        </div>
+        <div className="justify-self-center">
+          <MastheadWordmark home={home} />
+        </div>
+        <div className="flex items-center justify-end gap-2 lg:gap-3">
+          <nav className="src-nav-primary" aria-label="主路径">
+            {items.map((item) => (
+              <MastNavLink key={item.to} item={item} />
+            ))}
+          </nav>
           <button
             type="button"
             onClick={(event) => openSearch("", event.currentTarget)}
-            className="grid size-10 place-items-center rounded-control text-ink-3 transition-colors hover:bg-bg-sunk hover:text-ink lg:size-9"
+            className="grid size-9 place-items-center text-ink-3 hover:text-ink"
             aria-label="搜索"
           >
-            <IconSearch size={20} />
+            <IconSearch size={18} />
           </button>
           <MoreMenu />
         </div>
       </div>
     </header>
+  );
+}
+
+function MastheadDate({ dateLine, tagline }: { dateLine: string; tagline: string }) {
+  return (
+    <>
+      <div>{dateLine}</div>
+      <div>{tagline}</div>
+    </>
   );
 }
