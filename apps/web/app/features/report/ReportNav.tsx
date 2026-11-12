@@ -6,6 +6,7 @@ import { REPORT_NAMES, type ReportNavigationEntry, type ReportNavigationResponse
 import { PillTabs } from "../../components/ui/Tabs";
 import { IconChevronRight } from "../../components/icons";
 import { KINDS, KIND_PATH, archiveGroups, archiveMark, chipLabel, reportPath } from "./format";
+import { isDayRailShell } from "../../lib/visitor-shell";
 
 /** 日报 / 周报 / 月报 as the site's pill switch: spread across the archive column, or compact in the phone bar (opening at the top). */
 export function KindSwitch({ kind, phone = false }: { kind: ReportKind; phone?: boolean }) {
@@ -99,12 +100,13 @@ function ArchiveGroup({ g, kind, current, initiallyOpen }: {
 
 /** Phones, under the bar: the three latest issues and a way further back. */
 export function ReportPhoneNav({ kind, index, current, today }: { kind: ReportKind; index: ReportNavigationEntry[]; current: string | null; today: string }) {
+  const dayRail = isDayRailShell();
   const recent = index.slice(0, 3);
   const earlier = kind === "daily" ? "/daily/archive" : "#report-history";
   const chip = "inline-flex h-11 shrink-0 items-center rounded-full border px-4 text-[13px] transition-colors";
   if (recent.length === 0) return null;
   return (
-    <nav aria-label={`最近的${REPORT_NAMES[kind]}`} className="scrollbar-none bleed flex gap-2 overflow-x-auto pb-1 pt-1.5 lg:hidden">
+    <nav aria-label={`最近的${REPORT_NAMES[kind]}`} className={`scrollbar-none flex gap-2 overflow-x-auto pb-1 pt-1.5 lg:hidden ${dayRail ? "px-[var(--src-pad)]" : "bleed"}`}>
       {recent.map((e) => {
         const on = e.key === current;
         return (
