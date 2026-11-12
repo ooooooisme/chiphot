@@ -16,7 +16,7 @@ export interface BackTarget {
   label: string;
 }
 
-export function PhoneBar({ back, backClassName, contentInset, title, large = false, sub, leading, center, actions }: {
+export function PhoneBar({ back, backClassName, contentInset, title, large = false, largeAs = "h1", sub, leading, center, actions }: {
   back?: BackTarget;
   backClassName?: string;
   /** Align bar content with Source shell padding (no bleed / negative grid margin). */
@@ -25,6 +25,8 @@ export function PhoneBar({ back, backClassName, contentInset, title, large = fal
    *  also as the large heading below the bar. */
   title?: ReactNode;
   large?: boolean;
+  /** Level for the large heading when the page already has an `h1` elsewhere (e.g. desktop header). */
+  largeAs?: "h1" | "h2";
   /** A line under the large title. */
   sub?: ReactNode;
   leading?: ReactNode;
@@ -64,9 +66,15 @@ export function PhoneBar({ back, backClassName, contentInset, title, large = fal
       </header>
       {large && title && (
         <div className="pb-3 pt-0.5 lg:hidden">
-          <h1 data-page-title="" className="text-[30px] font-bold leading-[1.25] tracking-[-0.01em] text-ink">
-            {title}
-          </h1>
+          {largeAs === "h2" ? (
+            <h2 data-page-title="" className="text-[30px] font-bold leading-[1.25] tracking-[-0.01em] text-ink">
+              {title}
+            </h2>
+          ) : (
+            <h1 data-page-title="" className="text-[30px] font-bold leading-[1.25] tracking-[-0.01em] text-ink">
+              {title}
+            </h1>
+          )}
           {sub && <div className="mt-1 text-[12.5px] leading-relaxed text-ink-4">{sub}</div>}
         </div>
       )}

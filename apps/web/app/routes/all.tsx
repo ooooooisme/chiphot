@@ -85,6 +85,7 @@ export default function AllPage() {
   };
   const dayRail = isDayRailShell();
   const title = f.q ? `搜索“${f.q}”` : f.tag ? `#${f.tag}` : null;
+  const pageTitle = title ?? ALL_TITLE;
   const updated = beijingTime(data.freshness);
   // Searches are remembered in this browser for the phone search (listed in the privacy notice).
   useEffect(() => {
@@ -115,10 +116,16 @@ export default function AllPage() {
       )}
       {!dayRail && <ActiveFilters base="/all" category={f.category} channel={f.channel} tag={f.tag} />}
 
+      {dayRail && (
+        <h1 data-page-title="" className="sr-only">
+          {pageTitle}
+        </h1>
+      )}
+
       {/* Desktop, as on 精选: the title, then one filter row with the search field aligned on the right. */}
       {!dayRail && (
         <div className="hidden lg:block">
-          <h1 className="text-[24px] font-semibold leading-[1.3] text-ink">{title ?? ALL_TITLE}</h1>
+          <h1 className="text-[24px] font-semibold leading-[1.3] text-ink">{pageTitle}</h1>
           <div className="mb-5 mt-4 flex items-center justify-between gap-4">
             <CategoryTabs base="/all" category={f.category} channel={f.channel} layoutId="all-cat-desk" className="min-w-0" />
             <SearchField defaultValue={f.q ?? ""} keep={keep} />
