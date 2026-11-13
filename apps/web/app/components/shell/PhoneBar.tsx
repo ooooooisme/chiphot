@@ -4,6 +4,7 @@
 import { forwardRef, useEffect, useLayoutEffect, useState, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { IconChevronLeft } from "../icons";
+import { isDayRailShell } from "../../lib/visitor-shell";
 import { historyIndex, previousScreen } from "./screens";
 import { markBack } from "./transitions";
 
@@ -35,15 +36,16 @@ export function PhoneBar({ back, backClassName, contentInset, title, large = fal
   const scrolled = useScrolled();
   const titleShown = useHeadingUnderBar(!center && !!title);
   const wideCenter = !!center && !back && !leading;
+  const inset = contentInset ?? isDayRailShell();
   return (
     <>
       <header
         data-phone-bar=""
-        data-src-inset={contentInset ? "" : undefined}
-        className={`${contentInset ? "" : "bleed"} sticky top-0 z-40 bg-bg/85 backdrop-blur-xl backdrop-saturate-150 transition-shadow duration-200 lg:hidden ${scrolled ? "shadow-[0_1px_0_var(--line-soft)]" : ""}`}
+        data-src-inset={inset ? "" : undefined}
+        className={`${inset ? "" : "bleed"} sticky top-0 z-40 bg-bg/85 backdrop-blur-xl backdrop-saturate-150 transition-shadow duration-200 lg:hidden ${scrolled ? "shadow-[0_1px_0_var(--line-soft)]" : ""}`}
       >
         <div
-          className={`grid h-[var(--bar-h)] items-center ${contentInset ? "px-[var(--src-pad)]" : "-mx-2.5"} ${wideCenter ? "grid-cols-[minmax(0,1fr)_auto]" : "grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]"}`}
+          className={`grid h-[var(--bar-h)] items-center ${inset ? "px-[var(--src-pad)]" : "-mx-2.5"} ${wideCenter ? "grid-cols-[minmax(0,1fr)_auto]" : "grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]"}`}
         >
           {!wideCenter && <div className="flex min-w-0 items-center">{back ? <ArticleBackButton {...back} className={backClassName} /> : leading}</div>}
           {/* A title not shown yet takes no width, so the back label is not cut short before it appears. */}
