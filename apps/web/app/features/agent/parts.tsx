@@ -1,7 +1,7 @@
 // Building blocks of the Agent page: panel heads, numbered steps, copyable asks and addresses,
 // quiet tip tiles, callouts, tables and the fold-away details under each panel.
 import type { ReactNode } from "react";
-import { CopyButton } from "./CodeBlock";
+import { CopyButton, onHorizontalScrollKeyDown } from "./CodeBlock";
 import { IconChevronDown } from "../../components/icons";
 
 /** A panel's head: the track and version in small mono, the promise, and one line of context. */
@@ -134,7 +134,7 @@ export function Mono({ children }: { children: ReactNode }) {
 /** A plain table on a card; long rows scroll sideways on phones. Group rows name a block of rows. */
 export function Table({ head, rows, minWidth = 560 }: { head: string[]; rows: Array<{ group: string } | ReactNode[]>; minWidth?: number }) {
   return (
-    <div className="overflow-x-auto rounded-card border border-line bg-surface">
+    <div tabIndex={0} onKeyDown={onHorizontalScrollKeyDown} className="overflow-x-auto rounded-card border border-line bg-surface">
       <table className="w-full text-left text-[13.5px]" style={{ minWidth }}>
         <thead className="bg-bg-sunk text-[12.5px] text-ink-3">
           <tr>{head.map((h) => <th key={h} className="px-3.5 py-2 font-medium">{h}</th>)}</tr>

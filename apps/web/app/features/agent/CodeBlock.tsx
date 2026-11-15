@@ -1,4 +1,13 @@
-import { useState } from "react";
+import { useState, type KeyboardEvent } from "react";
+
+/** Arrow keys move focusable horizontal scroll regions; focused `<pre>` does not scroll by default in Chromium. */
+export function onHorizontalScrollKeyDown(e: KeyboardEvent<HTMLElement>) {
+  if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+  const el = e.currentTarget;
+  if (el.scrollWidth <= el.clientWidth) return;
+  e.preventDefault();
+  el.scrollLeft += e.key === "ArrowRight" ? 48 : -48;
+}
 import { copyText } from "../../lib/clipboard";
 import { IconCheck, IconCopy } from "../../components/icons";
 
@@ -31,7 +40,11 @@ export function CodeBlock({ code, lang, title, wrap = false, className = "my-4" 
         <span className="text-[12px] text-ink-4">{title ?? lang ?? ""}</span>
         <CopyButton text={code} />
       </div>
-      <pre className={`mono bg-bg-sunk/60 px-4 py-4 text-[12.5px] leading-[1.75] text-ink-2 dark:bg-bg-muted/40 ${wrap ? "whitespace-pre-wrap break-words" : "overflow-x-auto"}`}>
+      <pre
+        tabIndex={wrap ? undefined : 0}
+        onKeyDown={wrap ? undefined : onHorizontalScrollKeyDown}
+        className={`mono bg-bg-sunk/60 px-4 py-4 text-[12.5px] leading-[1.75] text-ink-2 dark:bg-bg-muted/40 ${wrap ? "whitespace-pre-wrap break-words" : "overflow-x-auto"}`}
+      >
         <code>{code}</code>
       </pre>
     </div>
