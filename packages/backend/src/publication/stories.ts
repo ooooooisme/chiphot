@@ -13,6 +13,7 @@ import { publicSourceName } from "./rules.ts";
 import { latestHotRanking, rankingExtras } from "./hot.ts";
 import { storyTexts } from "./story-text.ts";
 import { topicsOfStory } from "./topics.ts";
+import { isHiddenStory } from "./hidden-stories.ts";
 import { itemUrl, storyUrl, v1StoryApiUrl, v1StoryUrl } from "./links.ts";
 
 export type StoryLookup = { kind: "found"; storyId: number; publicId: string } | { kind: "merged"; target: string } | { kind: "not_found" };
@@ -27,6 +28,7 @@ function storyStatusFor(latestAt: Date | null, now: number): "active" | "watchin
 
 export async function resolveStory(publicId: string): Promise<StoryLookup> {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(publicId)) return { kind: "not_found" };
+  if (isHiddenStory(publicId)) return { kind: "not_found" };
   const [s] = await sql<{ id: number; merged_into: number | null }[]>`SELECT id, merged_into FROM stories WHERE public_id = ${publicId}`;
   let targetId: number | null = s ? (s.merged_into ?? null) : null;
   if (!s) {
@@ -137,7 +139,7 @@ async function relatedStories(storyId: number, now: Date) {
       SELECT 1 FROM facts f JOIN fact_articles fa ON fa.fact_id = f.id JOIN publications p ON p.article_id = fa.article_id
       JOIN sources s ON s.id = p.source_id
       WHERE f.story_id = st.id AND ${evidenceCondition()} AND ${storyReportCondition(now)}
-    ) ORDER BY st.latest_at DESC NULLS LAST, st.id DESC LIMIT 8`;
+    ) ORDER BY st.latest_at DESC NULLS LAST, st.id DESC LIMIT 8`.then((rows) => rows.filter((r) => !isHiddenStory(r.public_id)));
 }
 
 export async function loadStoryDetail(storyId: number, now = new Date()): Promise<StoryDetail | null> {
@@ -255,7 +257,7 @@ export async function loadHot(): Promise<HotResponse> {
   return {
     computedAt: ranking.computedAt,
     windowHours: 48,
-    entries: ranking.entries.map((e) => {
+    entries: ranking.entries.filter((e) => !isHiddenStory(e.storyPublicId)).map((e) => {
       const picture = covers.get(e.storyId);
       const coverUrl = picture ? proxiedImage(picture.url, "full") : null;
       const text = extras.text(e);
@@ -285,7 +287,7 @@ export async function loadHot(): Promise<HotResponse> {
 
 export async function v1HotTopics() {
   const ranking = await latestHotRanking();
-  const items = (ranking?.entries ?? []).map((e) => {
+  const items = (ranking?.entries ?? []).filter((e) => !isHiddenStory(e.storyPublicId)).map((e) => {
     const links = {
       aihot: e.representativeItemId ? itemUrl(e.representativeItemId) : storyUrl(e.storyPublicId),
       original: e.representativeUrl ?? storyUrl(e.storyPublicId),

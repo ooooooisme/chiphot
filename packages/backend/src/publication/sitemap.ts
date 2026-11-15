@@ -11,6 +11,7 @@ import { ITEM_FROM } from "./items.ts";
 import { sql } from "../db.ts";
 import { shared } from "../lib/cache.ts";
 import { escapeXml } from "../lib/text.ts";
+import { isHiddenStory } from "./hidden-stories.ts";
 import { siteUrl } from "./links.ts";
 import { evidenceCondition, listedCondition, selectedCondition, storyReportCondition } from "./scope.ts";
 import { topicPageCounts } from "./topics.ts";
@@ -89,7 +90,10 @@ export async function loadDiscoveryEntries(at = new Date(), limits?: { stories: 
       SELECT 1 FROM facts f JOIN fact_articles fa ON fa.fact_id = f.id JOIN publications p ON p.article_id = fa.article_id
       WHERE f.story_id = st.id AND ${evidenceCondition()} AND ${listedCondition(at)})
     ORDER BY st.latest_at DESC NULLS LAST, st.id DESC ${limits ? sql`LIMIT ${limits.stories}` : sql``}`;
-  for (const s of stories) entries.push({ loc: `/story/${s.public_id}`, revision: s.revision, changefreq: "daily", priority: 0.5 });
+  for (const s of stories) {
+    if (isHiddenStory(s.public_id)) continue;
+    entries.push({ loc: `/story/${s.public_id}`, revision: s.revision, changefreq: "daily", priority: 0.5 });
+  }
   for (const m of serverModules()) if (m.sitemap?.entries) entries.push(...(await m.sitemap.entries()));
   // Material/translation timestamps can also record a retry or a state repair. Hash the content;
   // without a dedicated public modification clock, omitting lastmod is more accurate than guessing.
