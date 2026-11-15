@@ -8,6 +8,7 @@ import { isChineseText } from "../lib/text.ts";
 import { isEmptyOrLinkOnly } from "../content/posts.ts";
 import { proxiedImage, proxiedImageSet } from "../media/imgproxy.ts";
 import { sourceOwnsPost } from "../sources/account.ts";
+import { isHiddenStory } from "./hidden-stories.ts";
 import { displayTags, publicSourceName } from "./rules.ts";
 import { foldableSelectionCondition, seatedCondition } from "./scope.ts";
 
@@ -167,7 +168,7 @@ export function toItemSummary(row: ItemRow): ItemSummary {
     score: row.score === null ? null : Math.round(Number(row.score)),
     selected: row.selected,
     channel: row.channel,
-    story: row.story_public_id ? { publicId: row.story_public_id, title: row.story_title ?? "" } : null,
+    story: row.story_public_id && !isHiddenStory(row.story_public_id) ? { publicId: row.story_public_id, title: row.story_title ?? "" } : null,
   };
 }
 
