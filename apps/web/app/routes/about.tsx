@@ -155,11 +155,11 @@ function Maker({ maker, contact }: { maker: NonNullable<typeof ABOUT.maker>; con
           ))}
           <p className="text-ink-3">
             它一直在改，改了什么都写在
-            <Link viewTransition to="/changelog" className="text-accent hover:underline">
+            <Link viewTransition to="/changelog" className="text-accent underline underline-offset-2">
               更新日志
             </Link>
             里；有想法、遇到问题，去
-            <Link viewTransition to="/feedback" className="text-accent hover:underline">
+            <Link viewTransition to="/feedback" className="text-accent underline underline-offset-2">
               反馈页
             </Link>
             告诉我。
@@ -272,7 +272,7 @@ export default function AboutPage() {
 
       <p className="mt-16 well rounded-card px-5 py-4 text-[13px] leading-[1.85] text-ink-3">
         {ABOUT.copyright[0]}
-        <Link viewTransition to="/feedback" className="text-accent hover:underline">
+        <Link viewTransition to="/feedback" className="text-accent underline underline-offset-2">
           反馈页
         </Link>
         {ABOUT.copyright[1]}
