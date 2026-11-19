@@ -264,6 +264,7 @@ export async function loadHot(): Promise<HotResponse> {
       return {
         rank: e.rank,
         story: { publicId: e.storyPublicId, title: e.title },
+        representativeItemId: e.representativeItemId ?? null,
         heat: e.heat,
         trend: e.trend,
         trendPct: e.trendPct,
@@ -287,9 +288,9 @@ export async function v1HotTopics() {
   const ranking = await latestHotRanking();
   const items = (ranking?.entries ?? []).map((e) => {
     const links = {
-      aihot: e.representativeItemId ? itemUrl(e.representativeItemId) : storyUrl(e.storyPublicId),
-      original: e.representativeUrl ?? storyUrl(e.storyPublicId),
-      story: v1StoryUrl(e.storyPublicId),
+      aihot: e.representativeItemId ? itemUrl(e.representativeItemId) : storyUrl(e.storyPublicId, e.representativeItemId),
+      original: e.representativeUrl ?? storyUrl(e.storyPublicId, e.representativeItemId),
+      story: v1StoryUrl(e.storyPublicId, e.representativeItemId),
     };
     return {
       rank: e.rank,
@@ -333,7 +334,7 @@ export async function v1Story(storyId: number) {
       latest: latest.title,
       digest: text.digest,
       digestUpdatedAt: text.digestUpdatedAt?.toISOString() ?? null,
-      links: { aihot: storyUrl(s.public_id) },
+      links: { aihot: storyUrl(s.public_id, reports[0]?.id) },
       reports: reports.slice(0, 50).map((r) => ({
         id: r.id,
         title: r.title,

@@ -14,6 +14,9 @@ import { config } from '@aihot/backend/config';
 import { installModules, type SitemapEntry } from '@aihot/backend/modules';
 import { loadDiscoveryEntries } from '@aihot/backend/publication/sitemap';
 import { submitIndexNow } from '@aihot/backend/operations/indexnow';
+import { LIST_READING } from '@aihot/site';
+
+const listOnly = LIST_READING?.hideDetailPages === true;
 
 const originalFetch = globalThis.fetch;
 const originalEnabled = config.indexNowSubmitEnabled;
@@ -56,13 +59,17 @@ test('discovery dates follow page content and publication scope', async () => {
   await sql`INSERT INTO reports (kind,key,window_start,window_end,content,generated_at,updated_at)
     VALUES ('daily','2026-10-01','2026-09-30','2026-10-01','{}','2026-10-01T00:00:00Z','2026-10-04T00:00:00Z')`;
   const entries = await loadDiscoveryEntries(new Date('2026-10-09'));
-  for (const loc of ['/', '/all', '/hot', '/agent', '/changelog']) {
+  for (const loc of (listOnly ? ['/', '/hot', '/agent', '/changelog'] : ['/', '/all', '/hot', '/agent', '/changelog'])) {
     assert.equal(entries.find(e => e.loc === loc)?.lastmod, undefined, `${loc} must not borrow the news clock`);
   }
+  assert.ok(!entries.some((e) => e.loc.includes('?') || e.loc.includes('feed=') || e.loc.includes('q=')));
+  if (listOnly) assert.ok(!entries.some((e) => e.loc === '/all'));
   assert.equal(entries.find(e => e.loc === '/daily/2026-10-01')?.lastmod?.toISOString(), '2026-10-04T00:00:00.000Z');
-  assert.ok(entries.some(e => e.loc === '/items/dates-visible'));
-  assert.ok(!entries.some(e => e.loc === '/items/dates-future'));
-  assert.ok(!entries.some(e => e.loc === '/items/dates-signal'));
+  if (!listOnly) {
+    assert.ok(entries.some(e => e.loc === '/items/dates-visible'));
+    assert.ok(!entries.some(e => e.loc === '/items/dates-future'));
+    assert.ok(!entries.some(e => e.loc === '/items/dates-signal'));
+  }
 });
 
 test('dry runs leave changes pending, corrections and disappeared URLs are submitted again', async () => {

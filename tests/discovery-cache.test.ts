@@ -4,6 +4,7 @@ import { tag } from "./setup.ts";
 import assert from "node:assert/strict";
 import { after, test } from "node:test";
 import { sql, closeDb } from "@aihot/backend/db";
+import { LIST_READING } from "@aihot/site";
 import { buildApp } from "../apps/api/src/app.ts";
 
 const app = await buildApp();
@@ -20,7 +21,7 @@ test("sitemap responses and rebuild failures preserve the original freshness dea
     VALUES (${id},${id},'Discovery','Summary',${`https://example.org/${id}`},${new Date(now)},${new Date(now)},${new Date(now)},true,true,'news')`;
   const first = await app.inject("/sitemap.xml");
   assert.equal(first.statusCode, 200);
-  assert.ok(first.body.includes(`/items/${id}</loc>`));
+  if (!LIST_READING?.hideDetailPages) assert.ok(first.body.includes(`/items/${id}</loc>`));
   await sql`UPDATE publications SET visibility = 'withdrawn' WHERE article_id = ${id}`;
   t.mock.timers.tick(240_000);
   const cached = await app.inject({ url: "/sitemap.xml", headers: { "if-none-match": String(first.headers.etag) } });

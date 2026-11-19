@@ -186,6 +186,8 @@ export interface HotParticipant {
 export interface HotEntryView {
   rank: number;
   story: StoryRef;
+  /** Representative listed report, when the ranking still has public evidence for the story. */
+  representativeItemId: string | null;
   heat: number;
   trend: "up" | "down" | "flat" | "new" | "unknown";
   trendPct: number | null;

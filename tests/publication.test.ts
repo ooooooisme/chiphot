@@ -18,6 +18,7 @@ import { publishArticle, republishSource } from "@aihot/backend/publication/publ
 import { computeHotRanking } from "@aihot/backend/events/hot";
 import { latestHotRanking } from "@aihot/backend/publication/hot";
 import { loadItemShare } from "@aihot/backend/publication/og";
+import { itemUrl } from "@aihot/backend/publication/links";
 import { buildApp } from "../apps/api/src/app.ts";
 
 const T = tag();
@@ -414,7 +415,7 @@ test("v1 story matches the website's content and fallback ordering", async () =>
   assert.equal(v1.latest, site.latest);
   assert.equal(site.latestReport.id, second);
   assert.deepEqual(v1.reports.map(({ links: { original: _, ...links }, ...r }: any) => ({ ...r, links })), site.timeline.slice(0, 50).map((r: any) => ({ id: r.id, title: r.title, summary: r.summary,
-    source: { name: r.source.name, firstParty: r.source.firstParty }, publishedAt: r.publishedAt, links: { aihot: `${config.siteUrl}/items/${r.id}` } })));
+    source: { name: r.source.name, firstParty: r.source.firstParty }, publishedAt: r.publishedAt, links: { aihot: itemUrl(r.id) } })));
 });
 
 // An event's public id is kept by search engines and installed clients: once merged, it must lead to the

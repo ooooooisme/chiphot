@@ -12,7 +12,7 @@ import { createServer } from "node:http";
 import { after, before, test } from "node:test";
 import * as cheerio from "cheerio";
 import { reportDateLabel, type FeedItemSummary, type ReportCitation, type ReportDetail, type ReportKind, type SiteItemDetail, type StoryDetail } from "@aihot/contracts/site";
-import { SITE, withSubject } from "@aihot/site";
+import { LIST_READING, SITE, withSubject } from "@aihot/site";
 import { articleLd, readFilters, reportLd } from "../apps/web/app/lib/seo.ts";
 import { startWebServer, type WebServer } from "../apps/web/tests/web-server.ts";
 
@@ -63,13 +63,17 @@ test("filtered feeds keep their exact content address but leave indexing to the 
     assert.equal($("link[rel=canonical]").attr("href"), `${web.origin}${base}?${query}`);
     assert.ok($("main").text().includes(item.title));
   }
-  const $ = await page("/all?q=Claude&tab=relevance&page=2&anchorAt=old");
+  const searchPath = LIST_READING?.hideDetailPages ? "/?q=Claude&tab=relevance&page=2" : "/all?q=Claude&tab=relevance&page=2";
+  const $ = await page(`${searchPath}&anchorAt=old`);
   assert.equal($("meta[name=robots]").attr("content"), "noindex, follow");
-  assert.equal($("link[rel=canonical]").attr("href"), `${web.origin}/all?q=Claude&tab=relevance&page=2`);
+  assert.equal($("link[rel=canonical]").attr("href"), `${web.origin}${searchPath}`);
 });
 
 test("ordinary feed pages remain indexable and normalize ignored parameters", async () => {
-  for (const [requested, canonical] of [["/?channel=invalid&category=invalid&tag=%20&utm_source=fixture", "/"], ["/all?channel=all&tab=relevance&anchorAt=old&page=2&utm_source=fixture", "/all?page=2"]]) {
+  const archive = LIST_READING?.hideDetailPages
+    ? ["/?channel=invalid&category=invalid&tag=%20&utm_source=fixture", "/"]
+    : ["/all?channel=all&tab=relevance&anchorAt=old&page=2&utm_source=fixture", "/all?page=2"];
+  for (const [requested, canonical] of [["/?channel=invalid&category=invalid&tag=%20&utm_source=fixture", "/"], archive]) {
     const $ = await page(requested!);
     assert.equal($("meta[name=robots]").attr("content"), undefined);
     assert.equal($("link[rel=canonical]").attr("href"), `${web.origin}${canonical}`);
@@ -114,7 +118,7 @@ test("the homepage ties the founder to every public profile the site lists", asy
   if (!founder) return assert.equal("founder" in organization, false);
   assert.deepEqual((organization.founder as Record<string, unknown>).sameAs, founder.sameAs);
 });
-test("article metadata has a representative image and does not invent an update timestamp", async () => {
+test("article metadata has a representative image and does not invent an update timestamp", { skip: LIST_READING?.hideDetailPages ? "public item pages are off" : false }, async () => {
   const $ = await page(`/items/${item.id}`);
   const article = structured($).find((entry) => entry["@type"] === "NewsArticle")!;
   assert.equal(article.image, `${web.origin}/og/items/${item.id}.png`);
@@ -126,7 +130,7 @@ test("article metadata has a representative image and does not invent an update 
   assert.equal(articleLd({ path: "/items/test", headline: "更正", modifiedAt: modified }).dateModified, modified);
 });
 
-test("story metadata describes the visible collection, current summary and report list", async () => {
+test("story metadata describes the visible collection, current summary and report list", { skip: LIST_READING?.hideDetailPages ? "public story pages are off" : false }, async () => {
   const $ = await page(`/story/${story.publicId}`);
   const collection = structured($).find((entry) => entry["@type"] === "CollectionPage")!;
   assert.ok(collection);

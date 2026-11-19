@@ -104,7 +104,8 @@ export async function loadDiscoveryEntries(at = new Date(), limits?: { stories: 
     ORDER BY p.timeline_at DESC, p.article_id DESC ${limits ? sql`LIMIT ${Math.max(0, limits.urls - entries.length)}` : sql``}`;
     for (const it of items) entries.push({ loc: `/items/${it.id}`, revision: it.revision, changefreq: "monthly", priority: 0.5 });
   }
-  return limits ? entries.slice(0, limits.urls) : entries;
+  const out = limits ? entries.slice(0, limits.urls) : entries;
+  return out.filter((e) => !e.loc.includes("?") && !e.loc.includes("feed=") && !e.loc.includes("q=") && !(listOnly && e.loc === "/all"));
 }
 
 async function build(at: Date): Promise<string> {
