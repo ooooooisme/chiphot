@@ -70,17 +70,22 @@ export async function loader({ request }: Route.LoaderArgs) {
     if (q) {
       const sp = new URLSearchParams(url.searchParams);
       sp.delete("feed");
-      throw redirect(`/?${sp}`);
+      const rest = sp.toString();
+      const current = url.searchParams.toString();
+      if (rest !== current) throw redirect(rest ? `/?${rest}` : "/", { status: 308 });
     }
     const filters = readFilters(url.searchParams);
     const feed: "all" | "selected" = url.searchParams.get("feed") === "selected" ? "selected" : "all";
     const page = Math.min(Math.max(Number.parseInt(url.searchParams.get("page") ?? "1", 10) || 1, 1), 50);
+    const tab = url.searchParams.get("tab") === "relevance" ? "relevance" : null;
     const upstream = new Headers();
     const [data, dailyLatest] = await Promise.all([
       loadOr404<PoolResponse>(
         listPath("/api/site/pool", {
           ...filterParams(filters),
           feed: feed === "selected" ? "selected" : null,
+          q: q || null,
+          tab: q && tab === "relevance" ? "relevance" : null,
           page: page > 1 ? page : null,
         }),
         { responseHeaders: upstream, signal: request.signal, busyRedirect: `/search-busy${url.search}` },
