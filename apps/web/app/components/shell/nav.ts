@@ -47,7 +47,7 @@ export const inNav = (to: string) => !(NAV.hidden as readonly string[]).includes
 export function primaryNav(): NavItem[] {
   return [
     { to: "/", label: "精选", icon: IconBolt, end: true },
-    { to: "/all", label: "全部", icon: IconList },
+    { to: "/?feed=all", label: "全部", icon: IconList },
     { to: "/daily", label: "日报", icon: IconDoc },
   ];
 }

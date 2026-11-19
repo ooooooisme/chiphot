@@ -185,7 +185,7 @@ export function ErrorBoundary() {
           <Link reloadDocument to="/" className={buttonClass(notFound ? "primary" : "secondary")}>
             回到精选
           </Link>
-          <Link reloadDocument to="/all" className={buttonClass("secondary")}>
+          <Link reloadDocument to="/?feed=all" className={buttonClass("secondary")}>
             浏览全部动态
           </Link>
         </div>

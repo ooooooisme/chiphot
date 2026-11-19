@@ -1,5 +1,6 @@
 // Public pool (/all) with numeric pages, and search in its two orderings.
 import type { PoolResponse, TimelineFilters } from "@aihot/contracts/site";
+import { LIST_READING } from "@aihot/site";
 import { beijingDate, beijingMidnight } from "@aihot/contracts/time";
 import { one, sql, withCustomPlans, type Db } from "../db.ts";
 import { cachedByKey, sharedSearch } from "../lib/cache.ts";
@@ -7,10 +8,10 @@ import {
   categoryCondition, channelCondition, ITEM_COLUMNS, ITEM_FROM, seatHolders, tagCondition, toFeedItemSummary,
   type ItemRow,
 } from "./items.ts";
-import { listedCondition } from "./scope.ts";
+import { listedCondition, selectedCondition } from "./scope.ts";
 import { TOPICS } from "./topics.ts";
 
-export const POOL_PAGE_SIZE = 40;
+export const POOL_PAGE_SIZE = LIST_READING?.pageSize ?? 40;
 export const POOL_MAX_PAGES = 50;
 
 export class SearchBusyError extends Error {
@@ -111,26 +112,39 @@ export function publicMatchCondition(terms: string[]) {
   );
 }
 
+function listCondition(feed: "all" | "selected", now: Date) {
+  return feed === "selected" ? sql`${listedCondition(now)} AND ${selectedCondition(now)}` : sql`${listedCondition(now)}`;
+}
+
 /** The listed items under the filters, up to the pages the pool offers. */
-async function listedCount(f: TimelineFilters, now: Date): Promise<number> {
+async function listedCount(f: TimelineFilters, feed: "all" | "selected", now: Date): Promise<number> {
   return Number(one(await sql<{ n: number }[]>`
-    SELECT count(*) AS n FROM (SELECT 1 FROM publications p WHERE ${listedCondition(now)}
+    SELECT count(*) AS n FROM (SELECT 1 FROM publications p WHERE ${listCondition(feed, now)}
       ${channelCondition(f.channel)} ${categoryCondition(f.category)} ${tagCondition(f.tag)} LIMIT ${POOL_MAX_PAGES * POOL_PAGE_SIZE}) t`).n);
 }
 
 /** Without a search the total only sets the page count: it is reused for 30 seconds per filter. */
-const poolTotal = cachedByKey((f: TimelineFilters) => JSON.stringify([f.channel, f.category, f.tag]), (f) => listedCount(f, new Date()), { freshMs: 30_000, maxStaleMs: 30_000, maxKeys: 200 });
+interface PoolTotalKey extends TimelineFilters {
+  feed: "all" | "selected";
+}
+
+const poolTotal = cachedByKey(
+  (k: PoolTotalKey) => JSON.stringify([k.channel, k.category, k.tag, k.feed]),
+  (k) => listedCount(k, k.feed, new Date()),
+  { freshMs: 30_000, maxStaleMs: 30_000, maxKeys: 200 },
+);
 
 export interface PoolQuery extends TimelineFilters {
   q?: string | null;
   tab?: "time" | "relevance";
   page?: number;
+  feed?: "all" | "selected";
   now?: Date;
 }
 
 // Identical searches share their read before taking search capacity.
 const searchPool = sharedSearch(
-  (q: PoolQuery) => JSON.stringify([q.channel, q.category, q.tag, q.q, q.tab, q.page]),
+  (q: PoolQuery) => JSON.stringify([q.channel, q.category, q.tag, q.q, q.tab, q.page, q.feed ?? "all"]),
   queryPool, (q) => !!q.q?.trim(),
 );
 
@@ -140,11 +154,13 @@ export function loadPool(query: PoolQuery): Promise<PoolResponse> {
 
 async function queryPool(query: PoolQuery, now: Date): Promise<PoolResponse> {
   const page = Math.min(Math.max(query.page ?? 1, 1), POOL_MAX_PAGES);
+  const feed = query.feed === "selected" ? "selected" : "all";
   const q = query.q?.trim() || null;
   const tab = q && query.tab === "relevance" ? "relevance" : "time";
   const terms = q ? searchTerms(q) : [];
   const entityTag = q ? queryEntityTag(q) : null;
   const filters = sql`${channelCondition(query.channel)} ${categoryCondition(query.category)} ${tagCondition(query.tag)}`;
+  const visible = listCondition(feed, now);
   const offset = (page - 1) * POOL_PAGE_SIZE;
   const cap = POOL_MAX_PAGES * POOL_PAGE_SIZE;
 
@@ -157,12 +173,13 @@ async function queryPool(query: PoolQuery, now: Date): Promise<PoolResponse> {
       // Page ids from the timeline index first, then the joins for those rows only.
       const rows = await db<ItemRow[]>`
         WITH page AS (
-          SELECT p.article_id FROM publications p WHERE ${listedCondition(now)} ${filters}
+          SELECT p.article_id FROM publications p WHERE ${visible} ${filters}
           ORDER BY p.timeline_at DESC, p.article_id DESC LIMIT ${POOL_PAGE_SIZE} OFFSET ${offset})
         SELECT ${ITEM_COLUMNS} ${ITEM_FROM} WHERE p.article_id IN (SELECT article_id FROM page)
         ORDER BY p.timeline_at DESC, p.article_id DESC`;
       // A fixed clock (tests, replays) never shares cached totals.
-      return { rows, total: query.now ? await listedCount(query, now) : await poolTotal(query) };
+      const totalKey: PoolTotalKey = { channel: query.channel, category: query.category, tag: query.tag, feed };
+      return { rows, total: query.now ? await listedCount(query, feed, now) : await poolTotal(totalKey) };
     }
     if (tab === "relevance") {
       // Rank narrow rows first: no article bodies or translations enter the sort/count. The public
@@ -192,11 +209,11 @@ async function queryPool(query: PoolQuery, now: Date): Promise<PoolResponse> {
           SELECT p.article_id, p.timeline_at, max(matches.part) + (${titleScore}) + (CASE WHEN p.tags @> ${[entityTag]}::text[] THEN 10 ELSE 0 END) AS rel, ${tie} AS tie
           FROM (SELECT article_id, part FROM matches UNION ALL SELECT article_id, 0 FROM publications WHERE tags @> ${[entityTag]}::text[]) matches
           JOIN publications p ON p.article_id = matches.article_id
-          WHERE ${listedCondition(now)} ${filters}
+          WHERE ${visible} ${filters}
           GROUP BY p.article_id, p.timeline_at, p.title, p.tags, p.selected, p.seat, p.score` : sql`
           SELECT p.article_id, p.timeline_at, matches.part + (${titleScore}) AS rel, ${tie} AS tie
           FROM matches JOIN publications p ON p.article_id = matches.article_id JOIN sources s ON s.id = p.source_id
-          WHERE ${listedCondition(now)} ${filters}`;
+          WHERE ${visible} ${filters}`;
       const result = await db<RankedRow[]>`
         WITH matches AS ${splitFields ? sql`MATERIALIZED` : sql`NOT MATERIALIZED`} (${matches}), scored AS MATERIALIZED (${scored}
         ), page AS MATERIALIZED (
@@ -213,14 +230,14 @@ async function queryPool(query: PoolQuery, now: Date): Promise<PoolResponse> {
     // search rows, where one- and two-character terms scan a small table instead of every item.
     const rows = await db<ItemRow[]>`
       WITH page AS (
-        SELECT p.article_id FROM publications p WHERE ${listedCondition(now)} ${filters} ${matchOrSubject(directMatchCondition(terms))}
+        SELECT p.article_id FROM publications p WHERE ${visible} ${filters} ${matchOrSubject(directMatchCondition(terms))}
         ORDER BY p.timeline_at DESC, p.article_id DESC LIMIT ${POOL_PAGE_SIZE} OFFSET ${offset})
       SELECT ${ITEM_COLUMNS} ${ITEM_FROM} WHERE p.article_id IN (SELECT article_id FROM page)
       ORDER BY p.timeline_at DESC, p.article_id DESC`;
     const direct = terms.reduce((acc, t) => sql`${acc} AND ${like(sql`ps.direct`, t)}`, sql``);
     const { n } = one(await db<{ n: number }[]>`
       SELECT count(*) AS n FROM (SELECT 1 FROM pool_search ps JOIN publications p ON p.article_id = ps.article_id
-        WHERE ${listedCondition(now)} ${filters} ${matchOrSubject(direct)} LIMIT ${cap}) t`);
+        WHERE ${visible} ${filters} ${matchOrSubject(direct)} LIMIT ${cap}) t`);
     return { rows, total: Number(n) };
   };
 
@@ -233,7 +250,7 @@ async function queryPool(query: PoolQuery, now: Date): Promise<PoolResponse> {
 
   const holders = await seatHolders(rows, now);
   return {
-    filters: { channel: query.channel, category: query.category, tag: query.tag, q, tab },
+    filters: { channel: query.channel, category: query.category, tag: query.tag, q, tab, feed },
     items: rows.map((r) => (holders.has(r.id) ? { ...toFeedItemSummary(r), reason: null, sameEvent: holders.get(r.id)! } : toFeedItemSummary(r))),
     page,
     pageCount: Math.min(POOL_MAX_PAGES, Math.max(1, Math.ceil(total / POOL_PAGE_SIZE))),

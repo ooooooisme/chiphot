@@ -9,7 +9,8 @@ import { IntentLink } from "../../components/ui/IntentLink";
 import { useState, type ReactNode } from "react";
 import { Link } from "react-router";
 import { REPORT_NAMES, type ReportCitation, type ReportDetail, type ReportNavigationEntry } from "@aihot/contracts/site";
-import { REPORTS, SITE, subjectAfter, withSubject } from "@aihot/site";
+import { LIST_READING, REPORTS, SITE, subjectAfter, withSubject } from "@aihot/site";
+import { homeItemLink } from "../../lib/brief";
 import { Badge } from "../../components/ui/Badge";
 import { IconArrowLeft, IconArrowRight, IconArrowUpRight } from "../../components/icons";
 import { Kicker } from "../../components/ui/Kicker";
@@ -22,6 +23,7 @@ import { monthDay } from "../../lib/format.ts";
 import { EDITION, MOTTO, dateLine, dateMark, headline, metricItems, neighbourLabel, reportPath, shortDay } from "./format";
 
 const pad = (n: number) => String(n).padStart(2, "0");
+const itemPage = (id: string) => (LIST_READING?.hideDetailPages ? homeItemLink(id) : `/items/${id}`);
 const keyOf = (c: ReportCitation) => c.itemId ?? c.title;
 const anchorOf = (c: ReportCitation) => (c.itemId ? `r-${c.itemId}` : null);
 const LINK = "inline-flex min-h-7 items-center gap-0.5 font-medium transition-colors hover:text-accent";
@@ -117,7 +119,7 @@ function Related({ items, className = "" }: { items: ReportCitation[]; className
           <span className="mt-[9px] size-1 shrink-0 rounded-full bg-ink-4" aria-hidden="true" />
           <span className="min-w-0">
             {r.available && r.itemId ? (
-              <IntentLink viewTransition to={`/items/${r.itemId}`} className="text-ink-2 transition-colors hover:text-accent">
+              <IntentLink viewTransition to={itemPage(r.itemId)} className="text-ink-2 transition-colors hover:text-accent">
                 {r.title}
               </IntentLink>
             ) : (
@@ -154,7 +156,7 @@ function Story({ c, dated, className = "" }: { c: ReportCitation; dated: boolean
         <>
           <h3 className="mt-3 text-[19px] font-bold leading-[1.5] tracking-[-0.01em] text-ink [text-wrap:pretty] @[880px]:text-[20px]">
             {c.itemId ? (
-              <IntentLink viewTransition to={`/items/${c.itemId}`} className="transition-colors hover:text-accent">
+              <IntentLink viewTransition to={itemPage(c.itemId)} className="transition-colors hover:text-accent">
                 {c.title}
               </IntentLink>
             ) : (
@@ -292,7 +294,7 @@ function FrontPage({ report, pages, leadStory, count }: { report: ReportDetail; 
         {cover && wide && <LeadPicture cover={cover} onError={() => setBroken(cover.url)} priority className="order-2 mt-5 @[560px]:order-1" />}
         <h2 className="order-1 mt-4 text-[32px] font-black leading-[1.28] tracking-[-0.03em] text-ink [text-wrap:balance] @[520px]:text-[40px] @[560px]:order-2 @[1040px]:text-[48px] @[1040px]:leading-[1.22]">
           {leadStory?.itemId ? (
-            <IntentLink viewTransition to={`/items/${leadStory.itemId}`} className="transition-colors hover:text-accent">
+            <IntentLink viewTransition to={itemPage(leadStory.itemId)} className="transition-colors hover:text-accent">
               {title}
             </IntentLink>
           ) : (
@@ -322,7 +324,7 @@ function FrontPage({ report, pages, leadStory, count }: { report: ReportDetail; 
             <ol className="mt-2">
               {highlights.map((h, i) => {
                 const anchor = anchorOf(h);
-                const to = anchor && inPage.has(h.itemId) ? `#${anchor}` : h.itemId ? `/items/${h.itemId}` : h.sourceUrl;
+                const to = anchor && inPage.has(h.itemId) ? `#${anchor}` : h.itemId ? itemPage(h.itemId) : h.sourceUrl;
                 if (!h.available) {
                   return (
                     <li key={keyOf(h)} className="flex gap-3.5 border-b border-line py-4">
@@ -510,7 +512,7 @@ export function ReportPaper({ report, index }: { report: ReportDetail; index: Re
                       <span className="ml-2 text-[12px]">{WITHDRAWN_NOTE}</span>
                     </span>
                   ) : f.itemId ? (
-                    <Link viewTransition to={`/items/${f.itemId}`} className="text-ink transition-colors hover:text-accent">
+                    <Link viewTransition to={itemPage(f.itemId)} className="text-ink transition-colors hover:text-accent">
                       {f.title}
                     </Link>
                   ) : (
