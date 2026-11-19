@@ -6,6 +6,8 @@ import { sourceListTime } from "../../lib/format";
 import { listPath, filterParams } from "../../lib/seo";
 import { useReadSet } from "../../lib/local-state";
 import { readTone } from "./parts";
+import { homeItemLink } from "../../lib/brief";
+import { LIST_READING } from "@aihot/site";
 
 const reportsUrl = (factId: string, filters: TimelineFilters | undefined) =>
   listPath(`/api/site/groups/${encodeURIComponent(factId)}/reports`, filters ? filterParams(filters) : {});
@@ -42,7 +44,7 @@ export function SourceGroupLead({ group, parentId, filters }: { group: GroupInfo
           {loading && !reports && <li className="text-[12.5px] text-ink-3">加载中…</li>}
           {others.map((r) => (
             <li key={r.id} className="text-[13px]">
-              <Link viewTransition to={`/items/${r.id}`} className={`hover:text-accent ${readTone(read.has(r.id), "text-ink-2")}`}>
+              <Link viewTransition to={LIST_READING?.hideDetailPages ? homeItemLink(r.id) : `/items/${r.id}`} className={`hover:text-accent ${readTone(read.has(r.id), "text-ink-2")}`}>
                 {r.title}
               </Link>
               <span className="ml-2 text-ink-3">

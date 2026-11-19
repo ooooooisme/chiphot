@@ -1,7 +1,7 @@
 import { useLoaderData } from "react-router";
 import { IntentLink } from "../components/ui/IntentLink";
 import type { HotEntryView, HotResponse } from "@aihot/contracts/site";
-import { subjectAfter, withSubject } from "@aihot/site";
+import { LIST_READING, subjectAfter, withSubject } from "@aihot/site";
 import { cachedPage, loadOr404 } from "../lib/api.server";
 import { pageReuse } from "../lib/page-reuse";
 import { pageMeta } from "../lib/seo";
@@ -72,8 +72,9 @@ function Badges({ e }: { e: HotEntryView }) {
 
 /** The whole card opens the event; the title carries the link and stretches over the card. */
 function StoryLink({ e, className }: { e: HotEntryView; className: string }) {
+  const to = LIST_READING?.hideDetailPages ? "/" : `/story/${e.story.publicId}`;
   return (
-    <IntentLink viewTransition to={`/story/${e.story.publicId}`} className={`transition-colors after:absolute after:inset-0 after:content-[''] ${className}`}>
+    <IntentLink viewTransition to={to} className={`transition-colors after:absolute after:inset-0 after:content-[''] ${className}`}>
       {e.story.title}
     </IntentLink>
   );

@@ -1,9 +1,9 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { IntentLink } from "../components/ui/IntentLink";
-import { Link, useLoaderData, useLocation } from "react-router";
+import { data, Link, useLoaderData, useLocation } from "react-router";
 import type { Route } from "./+types/story";
 import type { StoryDetail, StoryReportView } from "@aihot/contracts/site";
-import { SITE } from "@aihot/site";
+import { LIST_READING, SITE } from "@aihot/site";
 import { cachedPage, loadOr404 } from "../lib/api.server";
 import { pageReuse } from "../lib/page-reuse";
 import { breadcrumbLd, pageMeta, storyLd, titled } from "../lib/seo";
@@ -28,6 +28,7 @@ export { pageHeaders as headers } from "../lib/api.server";
 export const { clientLoader, shouldRevalidate } = pageReuse<typeof loader>();
 
 export async function loader({ params, request }: Route.LoaderArgs) {
+  if (LIST_READING?.hideDetailPages) throw data({ message: "not_found" }, { status: 404 });
   const story = await loadOr404<StoryDetail>(`/api/site/stories/${encodeURIComponent(params.publicId)}`, { signal: request.signal, merged: (id) => `/story/${id}` });
   return cachedPage(300, { story });
 }

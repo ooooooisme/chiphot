@@ -1,5 +1,7 @@
 import { Link } from "react-router";
 import type { HotStripEntry } from "@aihot/contracts/site";
+import { LIST_READING } from "@aihot/site";
+import { homeItemLink } from "../../lib/brief";
 import { IconArrowRight, IconMinus, IconTrendDown, IconTrendUp } from "../../components/icons";
 import { Faces } from "../hot/Faces";
 
@@ -7,6 +9,7 @@ import { Faces } from "../hot/Faces";
 const RANK_COLOR = ["text-[15px] font-black text-rank-1", "text-[15px] font-black text-rank-2", "text-[15px] font-black text-rank-3"];
 
 function hrefOf(e: HotStripEntry): string {
+  if (LIST_READING?.hideDetailPages) return e.itemId ? homeItemLink(e.itemId) : "/";
   return e.storyPublicId ? `/story/${e.storyPublicId}` : e.itemId ? `/items/${e.itemId}` : "/hot";
 }
 

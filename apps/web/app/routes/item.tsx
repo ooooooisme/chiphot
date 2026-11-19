@@ -1,8 +1,8 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { Await, isRouteErrorResponse, Link, useAsyncError, useLoaderData, useNavigate, useRevalidator, type ClientLoaderFunctionArgs } from "react-router";
+import { Await, data, isRouteErrorResponse, Link, useAsyncError, useLoaderData, useNavigate, useRevalidator, type ClientLoaderFunctionArgs } from "react-router";
 import type { Route } from "./+types/item";
 import type { FeedItemSummary, SiteItemDetail } from "@aihot/contracts/site";
-import { ITEM_COPY, SITE } from "@aihot/site";
+import { ITEM_COPY, LIST_READING, SITE } from "@aihot/site";
 import { cachedPage, loadOr404 } from "../lib/api.server";
 import { pageReuse } from "../lib/page-reuse";
 import { articleLd, breadcrumbLd, pageMeta, siteUrl, titled } from "../lib/seo";
@@ -37,6 +37,7 @@ export { pageHeaders as headers } from "../lib/api.server";
 const PosterSheet = lazy(() => import("../features/item/PosterSheet"));
 
 export async function loader({ params, request }: Route.LoaderArgs) {
+  if (LIST_READING?.hideDetailPages) throw data({ message: "not_found" }, { status: 404 });
   const item = await loadOr404<SiteItemDetail>(`/api/site/items/${encodeURIComponent(params.id)}`, { signal: request.signal });
   return cachedPage(600, { item });
 }
@@ -618,7 +619,6 @@ function ItemView({ item }: { item: SiteItemDetail }) {
       {item.body && <ReadingProgress />}
       {dayRail && (
         <DayRailFeedChrome
-          base={item.selected ? "/" : "/all"}
           category={(item.category as CategoryKey | null) ?? null}
           channel="all"
         />
