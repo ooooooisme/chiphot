@@ -262,16 +262,36 @@ html[data-visitor-shell="day-rail"] body {
     padding: 34px 0 60px;
   }
   [data-visitor-shell="day-rail"] .src-earlier-row {
-    display: grid;
-    gap: 4px 24px;
-    align-items: baseline;
+    display: block;
     padding: 16px 0;
     border-bottom: 1px solid var(--src-rule);
   }
-  @media (min-width: 961px) {
-    [data-visitor-shell="day-rail"] .src-earlier-row {
-      grid-template-columns: 120px 1fr 200px;
-    }
+  [data-visitor-shell="day-rail"] .src-list-brief-secondary {
+    margin-top: 0.5rem;
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--src-ink2, #4a4a46);
+  }
+  [data-visitor-shell="day-rail"] .src-list-brief-lead {
+    margin-top: 18px;
+    font-size: 17px;
+    line-height: 1.7;
+    font-weight: 400;
+    color: var(--src-ink2, #4a4a46);
+  }
+  [data-visitor-shell="day-rail"] .src-list-mute {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #706d66;
+  }
+  [data-visitor-shell="day-rail"] .src-earlier-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
+    margin-top: 0.35rem;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #706d66;
   }
   [data-visitor-shell="day-rail"] .src-article-body {
     font-size: 16px;

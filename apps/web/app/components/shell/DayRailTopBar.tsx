@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useSearchParams } from "react-router";
 import { SITE } from "@aihot/site";
 import { IntentLink } from "../ui/IntentLink";
 import { beijingDate, beijingWeekday } from "@aihot/contracts/time";
@@ -11,7 +11,14 @@ import { MoreMenu } from "./MoreMenu";
 
 function MastNavLink({ item }: { item: NavItem }) {
   const { pathname } = useLocation();
-  const active = sidebarIsActive(item, pathname);
+  const [search] = useSearchParams();
+  const feed = search.get("feed");
+  const active =
+    item.to === "/?feed=selected"
+      ? pathname === "/" && feed === "selected"
+      : item.end
+        ? pathname === "/" && feed !== "selected"
+        : sidebarIsActive(item, pathname);
   return (
     <IntentLink
       to={item.to}
