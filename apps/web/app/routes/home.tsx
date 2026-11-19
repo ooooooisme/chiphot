@@ -46,13 +46,38 @@ function canonicalListPath(
   });
 }
 
+function listPageTitle(feed: "all" | "selected", page: number, q: string | null | undefined): string | undefined {
+  if (q) {
+    const quoted = `「${q}」`;
+    if (feed === "selected") {
+      return page > 1 ? `${quoted} · ${SITE.name} · 精选 · 第 ${page} 页` : `${quoted} · ${SITE.name} · 精选`;
+    }
+    return page > 1 ? `${quoted} · ${SITE.homeTitle} · 第 ${page} 页` : `${quoted} · ${SITE.homeTitle}`;
+  }
+  if (feed === "selected") {
+    return page > 1 ? `${SITE.name} · 精选 · 第 ${page} 页` : `${SITE.name} · 精选`;
+  }
+  return page > 1 ? `${SITE.homeTitle} · 第 ${page} 页` : undefined;
+}
+
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
-  const q = url.searchParams.get("q")?.trim();
   const dayRail = isDayRailShell();
   const listOnly = LIST_READING?.hideDetailPages && dayRail;
 
   if (listOnly) {
+    if (url.searchParams.has("q")) {
+      const raw = url.searchParams.get("q");
+      if (!raw?.trim()) {
+        const sp = new URLSearchParams(url.searchParams);
+        sp.delete("q");
+        sp.delete("tab");
+        if (sp.get("page") === "1") sp.delete("page");
+        const rest = sp.toString();
+        throw redirect(rest ? `/?${rest}` : "/", { status: 308 });
+      }
+    }
+    const q = url.searchParams.get("q")?.trim() || null;
     // Legacy alias for the public list: `feed=all` is not canonical on `/`.
     if (url.searchParams.get("feed") === "all") {
       const sp = new URLSearchParams(url.searchParams);
@@ -99,7 +124,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     return cachedPage(60, { list: true as const, data, filters, feed, dailyStrip }, upstream);
   }
 
-  if (q) throw redirect(`/all${url.search}`);
+  const qLegacy = url.searchParams.get("q")?.trim();
+  if (qLegacy) throw redirect(`/all${url.search}`);
   const filters = readFilters(url.searchParams);
   const upstream = new Headers();
   const [data, dailyLatest] = await Promise.all([
@@ -117,9 +143,10 @@ export function meta({ loaderData }: Route.MetaArgs) {
     const path = canonicalListPath(feed, page, filters, data.filters.q, data.filters.tab);
     const titles = data.items.map((i) => i.title);
     const listName = feed === "all" ? "全部" : "精选";
+    const title = listPageTitle(feed, page, data.filters.q);
     return pageMeta({
-      title: page > 1 ? `${SITE.homeTitle} · 第 ${page} 页` : undefined,
-      rawTitle: page > 1,
+      title,
+      rawTitle: title !== undefined,
       path,
       noindex: hasFeedFilters(filters) || !!data.filters.q,
       jsonLd: hasFeedFilters(filters) || data.filters.q ? undefined : [...siteLd(), itemListLd(path, listName, titles)],
