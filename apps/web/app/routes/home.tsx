@@ -39,7 +39,7 @@ function canonicalListPath(
 ) {
   return listPath("/", {
     ...filterParams(filters),
-    feed: feed === "all" ? "all" : null,
+    feed: feed === "selected" ? "selected" : null,
     q,
     tab: q && tab === "relevance" ? "relevance" : null,
     page: page > 1 ? page : null,
@@ -61,11 +61,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     }
     if (q) {
       const sp = new URLSearchParams(url.searchParams);
-      sp.set("feed", "all");
+      sp.delete("feed");
       throw redirect(`/?${sp}`);
     }
     const filters = readFilters(url.searchParams);
-    const feed: "all" | "selected" = url.searchParams.get("feed") === "all" ? "all" : "selected";
+    const feed: "all" | "selected" = url.searchParams.get("feed") === "selected" ? "selected" : "all";
     const page = Math.min(Math.max(Number.parseInt(url.searchParams.get("page") ?? "1", 10) || 1, 1), 50);
     const upstream = new Headers();
     const [data, dailyLatest] = await Promise.all([
