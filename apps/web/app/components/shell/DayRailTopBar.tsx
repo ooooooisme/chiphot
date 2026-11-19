@@ -12,11 +12,12 @@ import { MoreMenu } from "./MoreMenu";
 function MastNavLink({ item }: { item: NavItem }) {
   const { pathname } = useLocation();
   const [search] = useSearchParams();
+  const feed = search.get("feed");
   const active =
-    item.to === "/?feed=all"
-      ? pathname === "/" && search.get("feed") === "all"
+    item.to === "/?feed=selected"
+      ? pathname === "/" && feed === "selected"
       : item.end
-        ? pathname === "/" && search.get("feed") !== "all"
+        ? pathname === "/" && feed !== "selected"
         : sidebarIsActive(item, pathname);
   return (
     <IntentLink
