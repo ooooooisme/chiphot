@@ -53,6 +53,14 @@ export async function loader({ request }: Route.LoaderArgs) {
   const listOnly = LIST_READING?.hideDetailPages && dayRail;
 
   if (listOnly) {
+    // Legacy alias for the public list: `feed=all` is not canonical on `/`.
+    if (url.searchParams.get("feed") === "all") {
+      const sp = new URLSearchParams(url.searchParams);
+      sp.delete("feed");
+      if (sp.get("page") === "1") sp.delete("page");
+      const rest = sp.toString();
+      throw redirect(rest ? `/?${rest}` : "/", { status: 308 });
+    }
     if (url.searchParams.get("page") === "1") {
       const sp = new URLSearchParams(url.searchParams);
       sp.delete("page");
