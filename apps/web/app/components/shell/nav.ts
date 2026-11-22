@@ -46,8 +46,8 @@ export const inNav = (to: string) => !(NAV.hidden as readonly string[]).includes
 /** Day Rail top bar: 精选 / 全部 / 日报 (short labels, no subjectAfter). */
 export function primaryNav(): NavItem[] {
   return [
-    { to: "/", label: "精选", icon: IconBolt, end: true },
-    { to: "/all", label: "全部", icon: IconList },
+    { to: "/?feed=selected", label: "精选", icon: IconBolt },
+    { to: "/", label: "全部", icon: IconList, end: true },
     { to: "/daily", label: "日报", icon: IconDoc },
   ];
 }

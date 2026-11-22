@@ -135,6 +135,12 @@ export const HIDDEN_STORY_PUBLIC_IDS = [
  */
 export const VISITOR_SHELL: "day-rail" | null = "day-rail";
 
+/** 列表即阅读：首页分页条数、撤公开详情页。 */
+export const LIST_READING = {
+  pageSize: 20,
+  hideDetailPages: true,
+} as const;
+
 /** 条目卡片和详情页上的几处说法和显示。 */
 export const ITEM_COPY = {
   /** 模型写的那句理由叫什么：卡片、详情页、Markdown 导出、给 Agent 的回答和群推送都用它。 */

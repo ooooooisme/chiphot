@@ -1,7 +1,8 @@
 import { useLoaderData } from "react-router";
 import { IntentLink } from "../components/ui/IntentLink";
 import type { HotEntryView, HotResponse } from "@aihot/contracts/site";
-import { subjectAfter, withSubject } from "@aihot/site";
+import { LIST_READING, subjectAfter, withSubject } from "@aihot/site";
+import { hotStoryAnchor, hotStoryLink } from "../lib/brief";
 import { cachedPage, loadOr404 } from "../lib/api.server";
 import { pageReuse } from "../lib/page-reuse";
 import { pageMeta } from "../lib/seo";
@@ -72,8 +73,15 @@ function Badges({ e }: { e: HotEntryView }) {
 
 /** The whole card opens the event; the title carries the link and stretches over the card. */
 function StoryLink({ e, className }: { e: HotEntryView; className: string }) {
+  const listOnly = !!LIST_READING?.hideDetailPages;
+  const to = hotStoryLink(e.story.publicId, e.representativeItemId, listOnly);
+  const overlay = !(listOnly && !e.representativeItemId);
   return (
-    <IntentLink viewTransition to={`/story/${e.story.publicId}`} className={`transition-colors after:absolute after:inset-0 after:content-[''] ${className}`}>
+    <IntentLink
+      viewTransition
+      to={to}
+      className={`transition-colors ${overlay ? "after:absolute after:inset-0 after:content-['']" : ""} ${className}`}
+    >
       {e.story.title}
     </IntentLink>
   );
@@ -109,7 +117,7 @@ function HeatPanel({ e }: { e: HotEntryView }) {
 function Lead({ e }: { e: HotEntryView }) {
   const panel = !e.cover && e.spark.filter((v) => v !== null).length >= 3;
   return (
-    <article className="card card-hover group relative flex flex-col overflow-hidden p-5 sm:p-6">
+    <article id={hotStoryAnchor(e.story.publicId)} className="card card-hover group relative flex flex-col overflow-hidden p-5 sm:p-6 scroll-mt-20">
       <div className="flex items-center gap-2.5">
         <span className={`mono text-[12px] font-bold tracking-[0.16em] ${rankColor(e.rank)}`}>NO.{pad(e.rank)}</span>
         <Badges e={e} />
@@ -161,7 +169,7 @@ function Lead({ e }: { e: HotEntryView }) {
 /** No. 2 and 3: the same card, smaller, without the picture. */
 function Runner({ e }: { e: HotEntryView }) {
   return (
-    <article className="card card-hover group relative flex flex-col px-5 py-4">
+    <article id={hotStoryAnchor(e.story.publicId)} className="card card-hover group relative flex flex-col px-5 py-4 scroll-mt-20">
       <div className="flex items-center gap-2.5">
         <span className={`mono text-[12px] font-bold tracking-[0.16em] ${rankColor(e.rank)}`}>NO.{pad(e.rank)}</span>
         <Badges e={e} />
@@ -191,7 +199,7 @@ function Runner({ e }: { e: HotEntryView }) {
 /** No. 4–10: a row each, with a line of the digest, faces, the day of heat and the index. */
 function Row({ e }: { e: HotEntryView }) {
   return (
-    <li className="group relative grid grid-cols-[30px_minmax(0,1fr)] items-start gap-x-3 px-4 py-3 transition-colors hover:bg-bg-sunk/70 sm:px-5 lg:grid-cols-[44px_minmax(0,1fr)_auto_104px_76px] lg:items-center lg:gap-x-6 lg:px-6 lg:py-3.5 dark:hover:bg-bg-muted/40">
+    <li id={hotStoryAnchor(e.story.publicId)} className="group relative grid grid-cols-[30px_minmax(0,1fr)] items-start gap-x-3 px-4 py-3 transition-colors hover:bg-bg-sunk/70 sm:px-5 lg:grid-cols-[44px_minmax(0,1fr)_auto_104px_76px] lg:items-center lg:gap-x-6 lg:px-6 lg:py-3.5 scroll-mt-20 dark:hover:bg-bg-muted/40">
       <span className={`mono text-[16px] font-semibold leading-[24px] lg:text-[17px] ${rankColor(e.rank)}`} aria-label={`热度排名第 ${e.rank} 位`}>
         {pad(e.rank)}
       </span>

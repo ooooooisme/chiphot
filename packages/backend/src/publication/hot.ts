@@ -9,6 +9,7 @@ import { proxiedImage, proxiedImageSet } from "../media/imgproxy.ts";
 import { publicSourceName } from "./rules.ts";
 import { evidenceCondition, listedCondition } from "./scope.ts";
 import { isHiddenStory } from "./hidden-stories.ts";
+import { storySitePath } from "./links.ts";
 import { storyTexts } from "./story-text.ts";
 
 // Concurrent reads are shared, nothing more: public words follow withdrawals and regrouping at once.
@@ -21,7 +22,11 @@ export function latestHotRanking(): Promise<HotRanking | null> {
 /** Search links follow the same current public evidence as every hot-ranking surface. */
 export async function hotSearchLinks() {
   const ranking = await latestHotRanking();
-  return (ranking?.entries ?? []).slice(0, 5).filter((e) => !isHiddenStory(e.storyPublicId)).map((e) => ({ rank: e.rank, title: e.title, to: `/story/${e.storyPublicId}` }));
+  return (ranking?.entries ?? []).slice(0, 5).filter((e) => !isHiddenStory(e.storyPublicId)).map((e) => ({
+    rank: e.rank,
+    title: e.title,
+    to: storySitePath(e.storyPublicId, e.representativeItemId),
+  }));
 }
 
 async function queryLatestHotRanking(): Promise<HotRanking | null> {

@@ -10,6 +10,7 @@ import { upsertMaterial } from "@aihot/backend/content/materials";
 import { setSeoIndexed } from "@aihot/backend/admin/content";
 import { publishArticle } from "@aihot/backend/publication/publish";
 import { stopBoss } from "@aihot/backend/jobs/queue";
+import { LIST_READING } from "@aihot/site";
 import { buildApp } from "../apps/api/src/app.ts";
 
 const key = tag();
@@ -44,7 +45,11 @@ test("indexing and sitemap require a readable source, while manual archive index
   await sql`UPDATE publications SET visible_after = now() + interval '1 day' WHERE article_id = ${future}`;
   const sitemap = await app.inject("/sitemap.xml");
   assert.equal(sitemap.statusCode, 200);
-  assert.ok(sitemap.body.includes(`/items/${archive}</loc>`), "a readable archive can be explicitly indexed outside the pool");
+  if (!LIST_READING?.hideDetailPages) {
+    assert.ok(sitemap.body.includes(`/items/${archive}</loc>`), "a readable archive can be explicitly indexed outside the pool");
+  } else {
+    assert.ok(!sitemap.body.includes(`/items/${archive}</loc>`), "list-only discovery must not advertise withdrawn detail URLs");
+  }
   assert.ok(!sitemap.body.includes(`/items/${signal}</loc>`), "a stale index bit cannot publish a 404 URL");
   assert.ok(!sitemap.body.includes(`/items/${future}</loc>`), "an unreleased selection cannot reach discovery");
 });

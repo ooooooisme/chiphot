@@ -2,7 +2,7 @@
 // deadline; a saved copy may bridge a restart only for the remainder of that original lifetime.
 import { mkdir, readFile, stat, utimes, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { ABOUT, ACCESS, AGENT, POLICY, SITE } from "@aihot/site";
+import { ABOUT, ACCESS, AGENT, LIST_READING, POLICY, SITE } from "@aihot/site";
 import { config, REPO_ROOT } from "../config.ts";
 import { sha256, stableJson } from "../lib/ids.ts";
 import { loadChangelog } from "../site/meta.ts";
@@ -53,9 +53,10 @@ export async function loadDiscoveryEntries(at = new Date(), limits?: { stories: 
     ) citations ON true ORDER BY r.kind, r.key DESC`;
   const reportRevision = (kind: string) => sha256(stableJson(reports.filter((r) => r.kind === kind)));
   const topics = await topicPageCounts(at, !limits);
+  const listOnly = LIST_READING?.hideDetailPages === true;
+  entries.push({ loc: "/", revision: (listOnly ? activity?.listed : activity?.selected) ?? "", changefreq: "hourly", priority: 1 });
+  if (!listOnly) entries.push({ loc: "/all", revision: activity?.listed ?? "", changefreq: "hourly", priority: 0.9 });
   entries.push(
-    { loc: "/", revision: activity?.selected ?? "", changefreq: "hourly", priority: 1 },
-    { loc: "/all", revision: activity?.listed ?? "", changefreq: "hourly", priority: 0.9 },
     { loc: "/daily", revision: reportRevision("daily"), changefreq: "daily", priority: 0.9 },
     { loc: "/hot", revision: limits ? undefined : sha256(stableJson((await latestHotRanking())?.entries ?? [])), changefreq: "hourly", priority: 0.9 },
     { loc: "/daily/archive", revision: reportRevision("daily"), changefreq: "daily", priority: 0.7 },
@@ -74,6 +75,8 @@ export async function loadDiscoveryEntries(at = new Date(), limits?: { stories: 
     entries.push({ loc: `/topics/${t.slug}`, revision: t.revision, changefreq: "daily", priority: 0.6 });
     for (let p = 2; p <= t.pages; p++) entries.push({ loc: `/topics/${t.slug}/page/${p}`, revision: t.revision, changefreq: "weekly", priority: 0.3 });
   }
+  if (!listOnly) {
+  for (const m of serverModules()) if (m.sitemap?.entries) entries.push(...(await m.sitemap.entries()));
   // A story needs listed evidence of its own. Its identity follows current readable reports as well
   // as the digest, so a correction or regrouping is visible even when latest_at does not advance.
   const stories = await sql<{ public_id: string; revision: string }[]>`
@@ -90,22 +93,23 @@ export async function loadDiscoveryEntries(at = new Date(), limits?: { stories: 
       SELECT 1 FROM facts f JOIN fact_articles fa ON fa.fact_id = f.id JOIN publications p ON p.article_id = fa.article_id
       WHERE f.story_id = st.id AND ${evidenceCondition()} AND ${listedCondition(at)})
     ORDER BY st.latest_at DESC NULLS LAST, st.id DESC ${limits ? sql`LIMIT ${limits.stories}` : sql``}`;
-  for (const s of stories) {
-    if (isHiddenStory(s.public_id)) continue;
-    entries.push({ loc: `/story/${s.public_id}`, revision: s.revision, changefreq: "daily", priority: 0.5 });
-  }
-  for (const m of serverModules()) if (m.sitemap?.entries) entries.push(...(await m.sitemap.entries()));
-  // Material/translation timestamps can also record a retry or a state repair. Hash the content;
-  // without a dedicated public modification clock, omitting lastmod is more accurate than guessing.
-  const items = await sql<{ id: string; revision: string }[]>`
+    for (const s of stories) {
+      if (isHiddenStory(s.public_id)) continue;
+      entries.push({ loc: `/story/${s.public_id}`, revision: s.revision, changefreq: "daily", priority: 0.5 });
+    }
+    // Material/translation timestamps can also record a retry or a state repair. Hash the content;
+    // without a dedicated public modification clock, omitting lastmod is more accurate than guessing.
+    const items = await sql<{ id: string; revision: string }[]>`
     SELECT p.article_id AS id,
       md5(concat_ws('|', p.revision::text, a.content_hash, tr.title, tr.body_html, tr.body_text, tr.complete::text, qt.text_zh,
         s.name, s.icon_url, st.public_id::text, st.title)) AS revision
     ${ITEM_FROM}
     WHERE ${storyReportCondition(at)} AND p.indexable
     ORDER BY p.timeline_at DESC, p.article_id DESC ${limits ? sql`LIMIT ${Math.max(0, limits.urls - entries.length)}` : sql``}`;
-  for (const it of items) entries.push({ loc: `/items/${it.id}`, revision: it.revision, changefreq: "monthly", priority: 0.5 });
-  return limits ? entries.slice(0, limits.urls) : entries;
+    for (const it of items) entries.push({ loc: `/items/${it.id}`, revision: it.revision, changefreq: "monthly", priority: 0.5 });
+  }
+  const out = limits ? entries.slice(0, limits.urls) : entries;
+  return out.filter((e) => !e.loc.includes("?") && !e.loc.includes("feed=") && !e.loc.includes("q=") && !(listOnly && e.loc === "/all"));
 }
 
 async function build(at: Date): Promise<string> {

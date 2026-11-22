@@ -21,11 +21,11 @@ function activeKey(category: CategoryKey | null, channel: ChannelKey): string {
 }
 
 export function DayRailFeedChrome({
-  base,
+  base = "/",
   category,
   channel = "all",
 }: {
-  base: "/" | "/all";
+  base?: "/";
   category: CategoryKey | null;
   channel?: ChannelKey;
 }) {
