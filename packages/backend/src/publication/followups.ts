@@ -3,6 +3,7 @@ import type { StoryFollowupsResponse } from "@aihot/contracts/site";
 import { sql } from "../db.ts";
 import { pickRepresentative, REPRESENTATIVE_COLUMNS, type RepresentativeIdentity } from "./representative.ts";
 import { publicSourceName } from "./rules.ts";
+import { isHiddenStory } from "./hidden-stories.ts";
 import { ownFactEvidenceCondition, selectedCondition } from "./scope.ts";
 
 const SHOWN = 8;
@@ -17,7 +18,7 @@ type Member = RepresentativeIdentity & {
  * ordered by when they first appeared. Null for an unknown or merged story, or one without any.
  */
 export async function loadStoryFollowups(storyPublicId: string, now = new Date()): Promise<StoryFollowupsResponse | null> {
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(storyPublicId)) return null;
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(storyPublicId) || isHiddenStory(storyPublicId)) return null;
   const members = await sql<Member[]>`
     SELECT p.fact_id, f.public_id AS fact_public_id, p.article_id AS id, p.title, s.name AS source_name,
       p.body_mode, p.score, p.timeline_at, p.sort_at, ${REPRESENTATIVE_COLUMNS}

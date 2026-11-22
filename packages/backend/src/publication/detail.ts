@@ -9,6 +9,7 @@ import { textToHtml } from "../content/sanitize.ts";
 import { exportTranslation, isChineseBody, ITEM_COLUMNS, ITEM_FROM, seatHolders, showsPost, toItemSummary, xView, type ItemRow } from "./items.ts";
 import { evidenceCondition, listedCondition } from "./scope.ts";
 import { itemUrl, siteUrl } from "./links.ts";
+import { isHiddenStory } from "./hidden-stories.ts";
 import { hasItemPage, publicSourceName } from "./rules.ts";
 import { topicLinks, topicMembership } from "./topics.ts";
 
@@ -156,7 +157,7 @@ export async function loadItemDetail(id: string, language: "zh" | "original" = "
     author: row.author,
     body: reading.body,
     outline: reading.outline,
-    relatedStories: related,
+    relatedStories: related.filter((s) => !isHiddenStory(s.publicId)),
     topics: topicLinks(row.topics),
     indexable: row.indexable,
     markdownAvailable: markdownAvailable(row),

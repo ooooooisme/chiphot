@@ -124,6 +124,13 @@ export const NAV = {
 };
 
 /**
+ * 发布层按 publicId 屏蔽的事件：故事页与公开 API 返回 404，不出现在 sitemap，条目页不再链到该事件。
+ */
+export const HIDDEN_STORY_PUBLIC_IDS = [
+  "0cda2ea1-e60c-4c9f-aa93-6118549fad0f",
+] as const;
+
+/**
  * 访客壳：day-rail 去掉桌面侧栏，顶栏主路径 + 按日时间轨；null 用引擎默认侧栏壳。
  */
 export const VISITOR_SHELL: "day-rail" | null = "day-rail";
