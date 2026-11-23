@@ -15,6 +15,7 @@ import { registerAgent } from "./routes/agent.ts";
 import { registerMedia } from "./routes/media.ts";
 import { registerFeeds } from "./routes/feeds.ts";
 import { registerStatic } from "./routes/static.ts";
+import { releaseLabel } from "@aihot/site/version";
 import { registerMcp } from "./routes/mcp.ts";
 import { sendProblem } from "./http/respond.ts";
 
@@ -86,7 +87,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   app.get("/api/health", async (_req, reply) => {
     const started = performance.now();
     await sql`SELECT 1`;
-    return reply.header("Cache-Control", "no-store").send({ ok: true, db: "ok", ms: Math.round(performance.now() - started), release: process.env.AIHOT_RELEASE ?? "dev" });
+    return reply.header("Cache-Control", "no-store").send({ ok: true, db: "ok", ms: Math.round(performance.now() - started), release: releaseLabel() });
   });
 
   registerSite(app);

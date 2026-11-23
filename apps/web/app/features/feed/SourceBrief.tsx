@@ -1,5 +1,6 @@
 import type { FeedItemSummary } from "@aihot/contracts/site";
-import { composeItemBrief, listItemHash } from "../../lib/brief";
+import { sourceListTime } from "../../lib/format";
+import { composeItemBrief } from "../../lib/brief";
 
 export function BriefParagraph({ summary, reason, className }: { summary: string | null | undefined; reason: string | null | undefined; className: string }) {
   const { text } = composeItemBrief(summary, reason);
@@ -18,16 +19,23 @@ export function OriginalSourceLink({ item, className = "src-list-mute hover:text
   if (!href) return null;
   const label = item.channel === "x" && item.x ? item.x.authorName : item.source.name;
   return (
-  <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
-    {label}
-  </a>
+    <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+      {label}
+    </a>
   );
 }
 
 export function ListTitle({ item, className, read }: { item: FeedItemSummary; className: string; read?: boolean }) {
+  return <span className={`${read ? "text-ink-3" : ""} ${className}`}>{item.title}</span>;
+}
+
+export function ItemMetaRow({ item, at, showInsufficient }: { item: FeedItemSummary; at: string; showInsufficient?: boolean }) {
   return (
-    <a href={listItemHash(item.id)} className={`hover:text-accent ${read ? "text-ink-3" : ""} ${className}`}>
-      {item.title}
-    </a>
+    <>
+      <time dateTime={at}>{sourceListTime(at)}</time>
+      <span aria-hidden="true">·</span>
+      <OriginalSourceLink item={item} />
+      {showInsufficient !== false && <BriefInsufficient summary={item.summary} reason={item.reason} />}
+    </>
   );
 }

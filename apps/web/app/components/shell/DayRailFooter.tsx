@@ -1,8 +1,12 @@
-import { Link } from "react-router";
+import { Link, useRouteLoaderData } from "react-router";
 import { SITE } from "@aihot/site";
 
 /** Source shell site footer — display name only (zh: 热芯网). */
 export function DayRailFooter() {
+  const root = useRouteLoaderData("root") as { release?: string | null } | undefined;
+  const release = root?.release;
+  const version =
+    release && release !== "dev" ? (release.startsWith("v") ? release : `v${release.split("+")[0]}`) : null;
   return (
     <footer className="src-site-footer border-t border-line bg-bg">
       <div className="src-container flex flex-wrap items-center justify-between gap-3 py-8 text-[12.5px] text-ink-3">
@@ -20,7 +24,17 @@ export function DayRailFooter() {
             反馈
           </Link>
         </div>
-        {SITE.footerNote ? <span className="w-full text-ink-4 lg:w-auto">{SITE.footerNote}</span> : null}
+        <span className="w-full text-ink-4 lg:w-auto">
+          {SITE.footerNote}
+          {version ? (
+            <>
+              <span className="mx-2" aria-hidden="true">
+                ·
+              </span>
+              {version}
+            </>
+          ) : null}
+        </span>
       </div>
     </footer>
   );

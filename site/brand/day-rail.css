@@ -293,6 +293,29 @@ html[data-visitor-shell="day-rail"] body {
     line-height: 1.5;
     color: #706d66;
   }
+  [data-visitor-shell="day-rail"] .src-list-img {
+    margin-top: 0.5rem;
+    overflow: hidden;
+    aspect-ratio: 3 / 2;
+    width: 100%;
+    max-width: 100%;
+    background: #f5f4f1;
+  }
+  [data-visitor-shell="day-rail"] .src-list-img-lead {
+    max-height: 280px;
+  }
+  [data-visitor-shell="day-rail"] .src-list-img-secondary {
+    max-height: 160px;
+  }
+  [data-visitor-shell="day-rail"] .src-list-img-compact {
+    max-height: 96px;
+    max-width: 100%;
+  }
+  @media (max-width: 1023px) {
+    [data-visitor-shell="day-rail"] .src-list-img-lead {
+      max-height: 200px;
+    }
+  }
   [data-visitor-shell="day-rail"] .src-article-body {
     font-size: 16px;
     line-height: 1.65;

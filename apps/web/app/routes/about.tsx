@@ -10,6 +10,7 @@ import { Kicker } from "../components/ui/Kicker";
 import { buttonClass } from "../components/ui/Controls";
 import { IconArrowRight } from "../components/icons";
 import { SignalRiver, type RiverSource } from "../features/about/SignalRiver";
+import { selectedItemLink } from "../lib/brief";
 import { PhoneBar } from "../components/shell/PhoneBar";
 import type { Screen } from "../components/shell/screens";
 
@@ -180,10 +181,10 @@ function Maker({ maker, contact }: { maker: NonNullable<typeof ABOUT.maker>; con
 function Latest({ item, className = "" }: { item: SiteStats["latest"][number] | undefined; className?: string }) {
   if (!item) return null;
   return (
-    <IntentLink viewTransition to={`/items/${item.id}`} className={`group block ${className}`}>
+    <IntentLink viewTransition to={selectedItemLink(item.id)} className={`group block ${className}`}>
       <span className="text-[11px] font-semibold tracking-[0.2em] text-accent">最近精选</span>
       <span key={item.id} className="animate-fade-up mt-1.5 block">
-        <span className="line-clamp-2 text-[13.5px] font-semibold leading-[1.55] text-ink transition-colors group-hover:text-accent">{item.title}</span>
+        <span className="line-clamp-2 text-[13.5px] font-semibold leading-[1.55] text-ink">{item.title}</span>
         <span className="mt-1 block truncate text-[12px] text-ink-4">{item.source}</span>
       </span>
     </IntentLink>

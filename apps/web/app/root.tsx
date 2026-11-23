@@ -4,6 +4,7 @@ import {
 } from "react-router";
 import type { SiteMeta } from "@aihot/contracts/site";
 import { SITE, VISITOR_SHELL } from "@aihot/site";
+import { releaseLabel } from "@aihot/site/version";
 import { RingMark } from "@aihot/site/brand/Logo.tsx";
 import { useEffect, useState, type ReactNode } from "react";
 import type { Route } from "./+types/root";
@@ -42,7 +43,7 @@ export const links: Route.LinksFunction = () => [
 
 /** The release rendering this document: once a newer one is deployed, a render error reloads the page (entry.client). */
 export async function loader({ request }: Route.LoaderArgs) {
-  const release = process.env.AIHOT_RELEASE ?? null;
+  const release = process.env.AIHOT_RELEASE?.trim() || releaseLabel();
   try {
     const meta = await apiGet<SiteMeta>("/api/site/meta", {
       headers: Object.assign({}, ...webModules().map((m) => m.root?.documentHeaders?.(request) ?? {})),

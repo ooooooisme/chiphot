@@ -11,6 +11,8 @@ import { Timeline } from "../features/feed/Timeline";
 import { HotTopics } from "../features/feed/HotTopics";
 import { ActiveFilters, CategoryTabs, FeedBar, SearchField } from "../features/feed/Filters";
 import { DailyReportStrip } from "../features/feed/DailyReportStrip";
+import { listMastheadLabel } from "../lib/list-masthead";
+import { monthDay } from "../lib/format";
 import { DayRailFeedChrome } from "../features/feed/DayRailChrome";
 import { SOURCE_FRONT_USED, SourceFront } from "../features/feed/SourceFront";
 import { SourceEarlierFromItems } from "../features/feed/SourceList";
@@ -160,7 +162,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
 function ListHome() {
   const loaderData = useLoaderData<typeof loader>();
   if (!loaderData.list) return null;
-  const { data: pool, filters, feed, dailyStrip } = loaderData;
+  const { data: pool, filters, feed } = loaderData;
   const [params] = useSearchParams();
   const showFront = pool.page === 1 && !hasFeedFilters(filters) && !filters.category && filters.channel === "all" && !pool.filters.q;
   const front = showFront ? pool.items.slice(0, SOURCE_FRONT_USED) : [];
@@ -172,7 +174,10 @@ function ListHome() {
       <h1 data-page-title="" className="sr-only">
         {feed === "all" ? "全部" : "精选"}
       </h1>
-      {dailyStrip && <DailyReportStrip href={dailyStrip.href} issueDate={dailyStrip.issueDate} />}
+      {(() => {
+        const label = listMastheadLabel(pool.items);
+        return label ? <DailyReportStrip href="/daily" label={label} /> : null;
+      })()}
       {pool.items.length === 0 ? (
         <div className="src-container py-8">
           <EmptyState title={feed === "all" ? "暂时没有公开条目" : "这一类暂时没有精选"}>
@@ -221,7 +226,12 @@ export default function Home() {
         </>
       )}
       {data.hot && inNav("/hot") && !dayRail && <HotTopics entries={data.hot} />}
-      {dayRail && dailyStrip && <DailyReportStrip href={dailyStrip.href} issueDate={dailyStrip.issueDate} />}
+      {dayRail && dailyStrip && (
+        <DailyReportStrip
+          href={dailyStrip.href}
+          label={`今日日报 · ${monthDay(dailyStrip.issueDate).replace(/(\d+)月(\d+)日/, "$1 月 $2 日")}`}
+        />
+      )}
       <Timeline initial={data} filters={data.filters} />
     </div>
   );

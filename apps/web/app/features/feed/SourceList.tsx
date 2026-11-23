@@ -1,6 +1,6 @@
 import type { FeedItemSummary, TimelineCard } from "@aihot/contracts/site";
-import { sourceListTime } from "../../lib/format";
-import { BriefInsufficient, BriefParagraph, ListTitle, OriginalSourceLink } from "./SourceBrief";
+import { BriefParagraph, ItemMetaRow, ListTitle } from "./SourceBrief";
+import { SourceImage } from "./SourceImage";
 
 function EarlierRow({ item, at }: { item: FeedItemSummary; at: string }) {
   return (
@@ -8,12 +8,10 @@ function EarlierRow({ item, at }: { item: FeedItemSummary; at: string }) {
       <h3 className="text-[16px] font-bold leading-[1.4] text-ink">
         <ListTitle item={item} className="text-ink" />
       </h3>
+      {item.sourceImage && <SourceImage image={item.sourceImage} variant="compact" />}
       <BriefParagraph summary={item.summary} reason={item.reason} className="src-list-brief-secondary mt-2" />
       <div className="src-earlier-meta">
-        <time dateTime={at}>{sourceListTime(at)}</time>
-        <span aria-hidden="true">·</span>
-        <OriginalSourceLink item={item} />
-        <BriefInsufficient summary={item.summary} reason={item.reason} />
+        <ItemMetaRow item={item} at={at} />
       </div>
     </li>
   );

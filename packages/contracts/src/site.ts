@@ -68,6 +68,8 @@ export interface FeedItemSummary extends Pick<ItemSummary, "id" | "title" | "sum
    * so the card can say "同一件事，精选收录的是《…》" instead of claiming a seat of its own.
    */
   sameEvent?: { id: string; title: string } | null;
+  /** Verifiable image from the source article or post; omitted when none. */
+  sourceImage?: { url: string; srcSet?: string; fit: "cover" | "contain" } | null;
 }
 
 export interface GroupInfo {

@@ -46,6 +46,7 @@ export interface ItemRow {
   zh_text: string | null;
   /** Chinese translation of the post an X post quotes. */
   quoted_zh: string | null;
+  article_media: Array<Record<string, unknown>> | null;
 }
 
 /** Columns every item listing selects. Internal judgement details never leave this layer. */
@@ -56,7 +57,8 @@ export const ITEM_COLUMNS = sql`
   a.x_post, a.author, a.language,
   CASE WHEN s.kind = 'x_search' AND ${sourceOwnsPost(sql`s.config`, sql`a.x_post->>'handle'`)} THEN s.icon_url END AS author_avatar_url,
   st.public_id::text AS story_public_id, st.title AS story_title,
-  CASE WHEN p.channel = 'x' THEN tr.body_text END AS zh_text, qt.text_zh AS quoted_zh`;
+  CASE WHEN p.channel = 'x' THEN tr.body_text END AS zh_text, qt.text_zh AS quoted_zh,
+  a.media AS article_media`;
 
 /** Public API listings never render article bodies, X media or story metadata. */
 export type ApiItemRow = Pick<ItemRow, "id" | "title" | "original_title" | "summary" | "source_name" | "url" | "published_at" | "discovered_at" | "category" | "score" | "selected" | "reason">;
@@ -173,6 +175,20 @@ export function toItemSummary(row: ItemRow): ItemSummary {
 }
 
 /** Project the shared public article into the exact fields a site card renders. */
+function firstSourceImage(row: ItemRow): FeedItemSummary["sourceImage"] {
+  const candidates = [...(row.article_media ?? []), ...((row.x_post as { media?: unknown[] } | null)?.media ?? [])];
+  const raw = candidates.find((m) => m && typeof m === "object" && (m as { kind?: string }).kind === "image" && (m as { url?: string }).url);
+  if (!raw || typeof raw !== "object") return null;
+  const urlRaw = String((raw as { url: string }).url);
+  const url = proxiedImage(urlRaw, "card");
+  if (!url) return null;
+  const w = typeof (raw as { width?: unknown }).width === "number" ? (raw as { width: number }).width : 0;
+  const h = typeof (raw as { height?: unknown }).height === "number" ? (raw as { height: number }).height : 0;
+  const fit: "cover" | "contain" = w > 0 && h > 0 && (w / h > 2.2 || h / w > 2.2) ? "contain" : "cover";
+  const srcSet = proxiedImageSet(urlRaw, "card");
+  return { url, ...(srcSet ? { srcSet } : {}), fit };
+}
+
 export function toFeedItemSummary(row: ItemRow): FeedItemSummary {
   const item = toItemSummary(row);
   const x = showsPost(row) ? xView(row, true) : null;
@@ -180,6 +196,7 @@ export function toFeedItemSummary(row: ItemRow): FeedItemSummary {
     id: item.id, title: item.title, summary: item.summary ?? (x?.text || null), reason: item.reason,
     source: item.source, links: item.links, publishedAt: item.publishedAt, timelineAt: item.timelineAt,
     category: item.category, tags: item.tags, score: item.score, selected: item.selected, channel: item.channel,
+    sourceImage: firstSourceImage(row),
     x: x ? {
       authorName: x.authorName, handle: x.handle, avatarUrl: x.avatarUrl,
       ...(x.avatarSrcSet ? { avatarSrcSet: x.avatarSrcSet } : {}), media: x.media,

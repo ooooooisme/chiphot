@@ -52,6 +52,10 @@ export function homeItemLink(id: string): string {
   return `/#item-${id}`;
 }
 
+export function selectedItemLink(id: string): string {
+  return `/?feed=selected#item-${id}`;
+}
+
 /** Hot ranking entry: list anchor when possible, otherwise the brief on /hot. */
 export function hotStoryLink(storyPublicId: string, representativeItemId: string | null | undefined, listOnly: boolean): string {
   if (!listOnly) return `/story/${storyPublicId}`;
