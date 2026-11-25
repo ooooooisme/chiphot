@@ -3,7 +3,7 @@
 // inline bodies only for sources that explicitly allow redistribution. Titles come from the site's
 // name and categories.
 import { feedCategoryLabel, PUBLIC_API_CATEGORY_KEYS, toPublicApiCategory, type PublicApiCategoryKey } from "@aihot/contracts/taxonomy";
-import { EDITION_WHEN, FEED_COPY, REPORTS, SITE, subjectAfter } from "@aihot/site";
+import { EDITION_WHEN, FEED_COPY, LIST_READING, REPORTS, SITE, subjectAfter } from "@aihot/site";
 import { config } from "../config.ts";
 import { sql } from "../db.ts";
 import { escapeXml } from "../lib/text.ts";
@@ -125,8 +125,8 @@ function fullContent(r: FeedRow, aihot: string): string | null {
   return `${proxyBodyImages(html, true, FEED_IMAGE_SECONDS)}<p>—— 本文由 ${escapeXml(SITE.name)} 聚合整理，完整版与${escapeXml(subjectAfter("更多", "动态"))}见 <a href="${aihot}">${aihot}</a></p>`;
 }
 
-function itemXml(r: FeedRow, includeContent: boolean): string {
-  const aihot = itemUrl(r.id);
+function itemXml(r: FeedRow, includeContent: boolean, selected: boolean): string {
+  const aihot = itemUrl(r.id, { selected });
   const summary = r.summary ?? "";
   const description = `<p>${escapeXml(summary)}</p>\n<p>🔗 <a href="${escapeXml(r.url)}">阅读原文</a></p>\n<p>via ${escapeXml(SITE.name)} · <a href="${aihot}">${aihot}</a></p>`;
   const publicCategory = toPublicApiCategory(r.category);
@@ -176,7 +176,9 @@ export async function itemFeed(kind: ItemFeedKind, category: PublicApiCategoryKe
       LEFT JOIN quote_translations qt ON p.channel = 'x' AND qt.tweet_id = substring(a.x_post->'quoted'->>'url' from '/status/([0-9]+)')` : sql``}
     ORDER BY coalesce(p.published_at, p.discovered_at) DESC, p.article_id DESC`;
   const m = feedMeta(kind);
-  let meta = { title: m.title, description: m.description, homePath: m.homePath, selfPath: m.path, ttl: m.pollHintMinutes };
+  const listOnly = LIST_READING?.hideDetailPages === true;
+  const homePath = listOnly && kind === "all" ? "/" : m.homePath;
+  let meta = { title: m.title, description: m.description, homePath, selfPath: m.path, ttl: m.pollHintMinutes };
   if (category) {
     const label = feedCategoryLabel(category);
     meta = {
@@ -189,7 +191,7 @@ export async function itemFeed(kind: ItemFeedKind, category: PublicApiCategoryKe
       ttl: m.pollHintMinutes,
     };
   }
-  const items = rows.map((r) => itemXml(r, includeContent));
+  const items = rows.map((r) => itemXml(r, includeContent, kind !== "all"));
   const first = notice?.(meta.selfPath);
   if (first) items.unshift(noticeXml(first));
   return channel(meta, items);

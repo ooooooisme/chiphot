@@ -134,7 +134,7 @@ export function v1Payload(p: {
   articleId: string; title: string; originalTitle: string | null; summary: string | null; sourceName: string; url: string;
   publishedAt: Date | null; discoveredAt: Date; category: string | null; score: number | null; selected: boolean; reason: string | null;
 }): V1ItemPayload {
-  const aihot = itemUrl(p.articleId);
+  const aihot = itemUrl(p.articleId, { selected: p.selected });
   return {
     id: p.articleId,
     title: p.title,

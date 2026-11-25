@@ -8,12 +8,16 @@ export const siteUrl = (path: string): string => `${config.siteUrl}${path}`;
 
 const listOnly = (): boolean => LIST_READING?.hideDetailPages === true;
 
+export type ItemLinkContext = { selected?: boolean };
+
 /** Site path to an item (relative); list-only reading uses a list anchor instead of a detail page. */
-export function itemSitePath(id: string): string {
-  return listOnly() ? `/#item-${id}` : `/items/${id}`;
+export function itemSitePath(id: string, context: ItemLinkContext = {}): string {
+  if (!listOnly()) return `/items/${id}`;
+  if (context.selected) return `/?feed=selected#item-${id}`;
+  return `/#item-${id}`;
 }
 
-export const itemUrl = (id: string): string => siteUrl(itemSitePath(id));
+export const itemUrl = (id: string, context: ItemLinkContext = {}): string => siteUrl(itemSitePath(id, context));
 
 /** Site path to a story (relative); list-only reading prefers a representative item or /hot. */
 export function storySitePath(publicId: string, representativeItemId?: string | null): string {

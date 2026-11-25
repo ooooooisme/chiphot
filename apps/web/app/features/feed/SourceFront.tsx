@@ -1,9 +1,11 @@
 import type { FeedItemSummary, GroupInfo, TimelineFilters } from "@aihot/contracts/site";
 import { CATEGORY_LABELS, type CategoryKey } from "@aihot/contracts/taxonomy";
+import { Link, useSearchParams } from "react-router";
+import { sourceListTime } from "../../lib/format";
 import { useReadSet } from "../../lib/local-state";
 import { SourceGroupLead } from "./SourceGroup";
-import { sourceListTime } from "../../lib/format";
-import { BriefInsufficient, BriefParagraph, ListTitle, OriginalSourceLink } from "./SourceBrief";
+import { BriefInsufficient, BriefParagraph, ItemMetaRow, ListTitle, OriginalSourceLink } from "./SourceBrief";
+import { SourceImage } from "./SourceImage";
 
 export const SOURCE_FRONT_USED = 7;
 
@@ -12,11 +14,25 @@ function catLabel(category: string | null | undefined): string {
   return CATEGORY_LABELS.industry;
 }
 
+function categoryHref(params: URLSearchParams, category: CategoryKey): string {
+  const sp = new URLSearchParams(params);
+  sp.set("category", category);
+  sp.delete("channel");
+  sp.delete("page");
+  const s = sp.toString();
+  return s ? `/?${s}` : "/";
+}
+
 function Kicker({ item }: { item: FeedItemSummary }) {
+  const [params] = useSearchParams();
   return (
     <p className="src-kicker">
       {item.selected && !item.sameEvent && <span className="text-[var(--src-gold,#9A6700)]">精选</span>}
-      {item.category && <span className="text-accent">{catLabel(item.category)}</span>}
+      {item.category && (
+        <Link to={categoryHref(params, item.category as CategoryKey)} className="text-accent hover:underline">
+          {catLabel(item.category)}
+        </Link>
+      )}
     </p>
   );
 }
@@ -54,6 +70,7 @@ function LeadColumn({
       <h2 id="src-lead-title" className="text-[25px] font-extrabold leading-[1.2] tracking-[-0.015em] text-ink lg:text-[40px] lg:font-extrabold lg:leading-[1.2]">
         <ListTitle item={item} read={read} className="" />
       </h2>
+      {item.sourceImage && <SourceImage image={item.sourceImage} variant="lead" />}
       <BriefParagraph summary={item.summary} reason={item.reason} className="src-list-brief-lead max-lg:mt-3 max-lg:text-[15.5px]" />
       <BriefInsufficient summary={item.summary} reason={item.reason} />
       <ItemMeta item={item} at={at} />
@@ -70,6 +87,7 @@ function SecondaryItem({ item, at, divider }: { item: FeedItemSummary; at: strin
       <h3 className="text-[17px] font-bold leading-[1.35] text-ink lg:text-[19px] lg:font-[750]">
         <ListTitle item={item} read={read} className="" />
       </h3>
+      {item.sourceImage && <SourceImage image={item.sourceImage} variant="secondary" />}
       <BriefParagraph summary={item.summary} reason={item.reason} className="src-list-brief-secondary mt-2.5 lg:mt-2.5" />
       <BriefInsufficient summary={item.summary} reason={item.reason} />
       <div className="mt-2 lg:mt-2.5">
@@ -96,12 +114,10 @@ function LatestItem({ item, at }: { item: FeedItemSummary; at: string }) {
       <h3 className="text-[15px] font-[680] leading-[1.4] text-ink">
         <ListTitle item={item} read={read} className={read ? "text-ink-3" : "text-ink"} />
       </h3>
+      {item.sourceImage && <SourceImage image={item.sourceImage} variant="compact" />}
       <BriefParagraph summary={item.summary} reason={item.reason} className="src-list-brief-secondary mt-2" />
       <div className="src-earlier-meta mt-2">
-        <BriefInsufficient summary={item.summary} reason={item.reason} />
-        <time dateTime={at}>{sourceListTime(at)}</time>
-        <span aria-hidden="true">·</span>
-        <OriginalSourceLink item={item} />
+        <ItemMetaRow item={item} at={at} />
       </div>
     </li>
   );
