@@ -7,6 +7,7 @@ import { publicCategoryCondition, API_ITEM_COLUMNS, API_ITEM_FROM, type ApiItemR
 import { listedCondition, seatedCondition } from "./scope.ts";
 import { publicMatchCondition, searchTerms, withSearchCapacity } from "./pool.ts";
 import { sharedSearch } from "../lib/cache.ts";
+import { itemUrl } from "./links.ts";
 import { v1Payload, type V1ItemPayload } from "./publish.ts";
 
 export interface V1ItemsQuery {
@@ -112,10 +113,21 @@ export async function ledgerWatermark(): Promise<number> {
   return Number(row?.w ?? 0);
 }
 
-function minimalOf(item: V1ItemPayload) {
+/** Stale ledger rows may still store /items/{id}; snapshot/changes recompute links on read. */
+export function refreshStoredSelectedLinks(item: V1ItemPayload): V1ItemPayload {
+  const aihot = itemUrl(item.id, { selected: true });
   return {
-    id: item.id, title: item.title, source: item.source, publishedAt: item.publishedAt, discoveredAt: item.discoveredAt,
-    category: item.category, score: item.score, selected: item.selected, links: { aihot: item.links.aihot },
+    ...item,
+    links: { ...item.links, aihot },
+    attribution: { ...item.attribution, url: aihot },
+  };
+}
+
+function minimalOf(item: V1ItemPayload) {
+  const fresh = refreshStoredSelectedLinks(item);
+  return {
+    id: fresh.id, title: fresh.title, source: fresh.source, publishedAt: fresh.publishedAt, discoveredAt: fresh.discoveredAt,
+    category: fresh.category, score: fresh.score, selected: fresh.selected, links: { aihot: fresh.links.aihot },
   };
 }
 
@@ -188,7 +200,7 @@ export async function selectedSnapshot(q: SnapshotQuery, now = new Date()) {
     count: page.length,
     hasMore,
     nextPage: hasMore && last ? encodeCursor(SYNC_PREFIX, { k: "page", e: epoch, w, f: fields, a: last.article_id, t: asOf }) : null,
-    items: page.map((r) => (fields === "minimal" ? minimalOf(r.payload) : r.payload)),
+    items: page.map((r) => (fields === "minimal" ? minimalOf(r.payload) : refreshStoredSelectedLinks(r.payload))),
   };
 }
 
@@ -225,7 +237,11 @@ export async function selectedChanges(q: { cursor: string; limit: number }, now 
     changes: page.map((r) =>
       r.op === "remove"
         ? { op: "remove" as const, changedAt: r.changed_at.toISOString(), id: r.article_id }
-        : { op: "upsert" as const, changedAt: r.changed_at.toISOString(), item: c.f === "minimal" ? minimalOf(r.payload!) : r.payload! },
+        : {
+            op: "upsert" as const,
+            changedAt: r.changed_at.toISOString(),
+            item: c.f === "minimal" ? minimalOf(r.payload!) : refreshStoredSelectedLinks(r.payload!),
+          },
     ),
   };
 }
